@@ -34,7 +34,7 @@ def download_and_extract(url, extract_to):
         else:
             print(f"Unsupported file format for 【{file_name}】. Skipping extraction.")
             return
-        print(f"Extracted  【{file_name}】  to  【{target_folder}】.")
+        print(f"Extracted   【{file_name}】 !!!!")
     else:
         print(f"Folder 【{target_folder}】 already exists. Skipping extraction.")
     
@@ -44,7 +44,7 @@ def setup_dataset():
     # 取得上一層資料夾的絕對路徑。
     PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     DATASET_DIR = os.path.join(PARENT_DIR, 'dataset')
-    PET_DIR = os.path.join(DATASET_DIR, 'oxford_iiit_pets')
+    PET_DIR = os.path.join(DATASET_DIR, 'oxford-iiit-pets')
     ANNOTATIONS_DIR = os.path.join(PET_DIR, 'annotations')
 
     os.makedirs(ANNOTATIONS_DIR, exist_ok=True)
@@ -82,7 +82,7 @@ def setup_dataset():
                         target_path = os.path.join(ANNOTATIONS_DIR, filename)
                         with open(target_path, "wb") as f:
                                 f.write(zip_ref.read(member))
-        print(f"Extracted .txt files from 【{zip_name}】 to 【{ANNOTATIONS_DIR}】.\n")
+        print(f"Extracted  【{zip_name}】 !!!!\n")
     else:
         print("All Kaggle zip files already exist. Skipping extraction.")  
 
