@@ -44,7 +44,7 @@ def setup_dataset():
     # 取得上一層資料夾的絕對路徑。
     PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     DATASET_DIR = os.path.join(PARENT_DIR, 'dataset')
-    PET_DIR = os.path.join(DATASET_DIR, 'oxford-iiit-pets')
+    PET_DIR = os.path.join(DATASET_DIR, 'oxford-iiit-pet')
     ANNOTATIONS_DIR = os.path.join(PET_DIR, 'annotations')
 
     os.makedirs(ANNOTATIONS_DIR, exist_ok=True)
