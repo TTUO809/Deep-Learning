@@ -192,6 +192,18 @@ class ResNet34UNet(nn.Module):
 
         # 最終輸出層，將通道數從 32 轉換為 out_channels。
         self.final_conv = nn.Conv2d(32, out_channels, kernel_size=1)
+
+        self._initialize_weights()
+
+    def _initialize_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
         
     def _make_layer(self, in_channels, out_channels, blocks, stride):
         '''

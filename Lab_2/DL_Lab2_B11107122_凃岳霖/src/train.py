@@ -146,8 +146,8 @@ def train(train_args):
                 #     masks_resized = masks
             
                 # 計算損失與 Dice Score。
-                loss = loss_function(outputs, masks_resized)
-                dice = cal_dice_score(outputs, masks_resized)
+                loss = loss_function(outputs, masks)
+                dice = cal_dice_score(outputs, masks)
 
             # AMP 反向傳播。
             scaler.scale(loss).backward()
@@ -182,6 +182,10 @@ def train(train_args):
             for images, masks in val_pbar:
                 images, masks = images.to(device), masks.to(device)
 
+                if train_args.model == 'unet':
+                    pad = 92
+                    images = F.pad(images, (pad, pad, pad, pad), mode='reflect') 
+
                 with autocast('cuda'):  # 混合精度訓練的上下文管理器。
                     # 前向傳播。
                     outputs = model(images)
@@ -194,7 +198,7 @@ def train(train_args):
                     #     masks_resized = masks
 
                     # 計算 Dice Score。
-                    dice = cal_dice_score(outputs, masks_resized)
+                    dice = cal_dice_score(outputs, masks)
 
                 # 累積 Dice Score。
                 val_dice += dice
