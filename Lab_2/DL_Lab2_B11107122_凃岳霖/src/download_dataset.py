@@ -18,13 +18,13 @@ def download_and_extract(url, extract_to):
     if not os.path.exists(file_path):
         print(f"Downloading 【{file_name}】 from 【{url}】...")
         urllib.request.urlretrieve(url, file_path)
-        print(f"Downloaded 【{file_name}】 to 【{file_path}】.")
+        print(f"Downloaded  【{file_name}】  to  【{file_path}】.")
     else:
         print(f"File 【{file_name}】 already exists at 【{file_path}】. Skipping download.")
 
     # 解壓縮檔案
     if not os.path.exists(target_folder) or len(os.listdir(target_folder)) == 0:
-        print(f"Extracting 【{file_name}】 to 【{target_folder}】...")
+        print(f"Extracting  【{file_name}】  to  【{target_folder}】...")
         if file_name.endswith('.zip'):
             with zipfile.ZipFile(file_path, 'r') as zip_ref:
                 zip_ref.extractall(extract_to)
@@ -32,11 +32,13 @@ def download_and_extract(url, extract_to):
             with tarfile.open(file_path, 'r:gz') as tar_ref:
                 tar_ref.extractall(extract_to)
         else:
-            print(f"Unsupported file format for 【{file_name}】. Skipping extraction.\n")
+            print(f"Unsupported file format for 【{file_name}】. Skipping extraction.")
             return
-        print(f"Extracted 【{file_name}】 to 【{target_folder}】.\n")
+        print(f"Extracted  【{file_name}】  to  【{target_folder}】.")
     else:
-        print(f"Folder 【{target_folder}】 already exists. Skipping extraction.\n")
+        print(f"Folder 【{target_folder}】 already exists. Skipping extraction.")
+    
+    print("="*80 + "\n")
 
 def setup_dataset():
     # 取得上一層資料夾的絕對路徑。
@@ -59,7 +61,7 @@ def setup_dataset():
         download_and_extract(url, PET_DIR)
 
     # Kaggle 競賽專屬資料切分檔案。
-    print("===  ===")
+    print("=== Decompressing Kaggle Competition Dataset... ===")
     kaggle_zips = [
         "nycu-2026-spring-dl-lab2-unet.zip",
         "binary-semantic-segmentation-res-net-34-u-net.zip"
@@ -84,9 +86,9 @@ def setup_dataset():
     else:
         print("All Kaggle zip files already exist. Skipping extraction.")  
 
-    print("\n" + "="*60)
+    print("\n" + "="*80)
     print("Dataset setup completed! You can now run train.py to start training your model.")
-    print("="*60)
+    print("="*80)
 
 if __name__ == "__main__":
     setup_dataset()
