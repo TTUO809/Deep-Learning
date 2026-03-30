@@ -1,0 +1,30 @@
+1. Implementation Highlights:
+
+    - 
+
+
+
+2. Data Preprocessing strategy:
+
+    - 
+
+
+
+
+3. Training Strategy:
+
+
+
+
+
+4. Key Observations:
+
+
+
+
+
+5. Comparison between UNet and ResNet34_UNet:
+
+
+
+
