@@ -51,7 +51,7 @@ def download_and_extract(url, extract_to):
 
 def setup_dataset():
     # 取得上一層資料夾的絕對路徑。
-    parent_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+    parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     dataset_dir = os.path.join(parent_dir, 'dataset', 'oxford-iiit-pet')
     annotations_dir = os.path.join(dataset_dir, 'annotations')
 
