@@ -62,7 +62,9 @@ class FocalLoss(nn.Module):
         bce_loss = self.bce_with_logits(predict_logits, GT_masks)  # 計算每個像素的 BCE Loss。
         pt = torch.exp(-bce_loss)  # pt 是模型對正確類別的預測概率。
 
-        focal_loss = self.alpha * (1 - pt) ** self.gamma * bce_loss  # 計算 Focal Loss，對難易樣本進行加權。(預測越準確的像素，權重越小；預測越錯的，權重越大。)
+        alpha_t = self.alpha * GT_masks + (1 - self.alpha) * (1 - GT_masks)
+        
+        focal_loss = alpha_t * (1 - pt) ** self.gamma * bce_loss  # 計算 Focal Loss，對難易樣本進行加權。(預測越準確的像素，權重越小；預測越錯的，權重越大。)
         
         if self.reduction == 'mean':
             return focal_loss.mean()

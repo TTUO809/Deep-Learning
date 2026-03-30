@@ -5,7 +5,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision.transforms.functional as TF
+import torch.nn.functional as F
+# import torchvision.transforms.functional as TF
 # from torch.optim.lr_scheduler import CosineAnnealingLR  # 用於根據 epoch 進行學習率調整的調度器 (餘弦退火)。 
 # from torch.optim.lr_scheduler import ReduceLROnPlateau  # 根據驗證損失自動調整學習率的調度器。(過擬合)
 
@@ -127,6 +128,10 @@ def train(train_args):
         for images, masks in train_pbar:
             images, masks = images.to(device), masks.to(device)
 
+            if train_args.model == 'unet':
+                pad = 92
+                images = F.pad(images, (pad, pad, pad, pad), mode='reflect') 
+
             optimizer.zero_grad()   # 清除之前的梯度。
 
             with autocast('cuda'):  # 混合精度訓練的上下文管理器。
@@ -134,11 +139,11 @@ def train(train_args):
                 outputs = model(images)
 
                 # 補償 UNet 的輸出圖像大小問題，對 GT_masks 進行中心裁剪以匹配輸出圖像的大小。
-                if train_args.model == 'unet':
-                    _, _, H, W = outputs.shape
-                    masks_resized = TF.center_crop(masks, output_size=(H, W))
-                else:
-                    masks_resized = masks
+                # if train_args.model == 'unet':
+                #     _, _, H, W = outputs.shape
+                #     masks_resized = TF.center_crop(masks, output_size=(H, W))
+                # else:
+                #     masks_resized = masks
             
                 # 計算損失與 Dice Score。
                 loss = loss_function(outputs, masks_resized)
@@ -181,12 +186,12 @@ def train(train_args):
                     # 前向傳播。
                     outputs = model(images)
 
-                    # 補償 UNet 的輸出圖像大小問題，對 GT_masks 進行中心裁剪以匹配輸出圖像的大小。
-                    if train_args.model == 'unet':
-                        _, _, H, W = outputs.shape
-                        masks_resized = TF.center_crop(masks, output_size=(H, W))
-                    else:
-                        masks_resized = masks
+                    # # 補償 UNet 的輸出圖像大小問題，對 GT_masks 進行中心裁剪以匹配輸出圖像的大小。
+                    # if train_args.model == 'unet':
+                    #     _, _, H, W = outputs.shape
+                    #     masks_resized = TF.center_crop(masks, output_size=(H, W))
+                    # else:
+                    #     masks_resized = masks
 
                     # 計算 Dice Score。
                     dice = cal_dice_score(outputs, masks_resized)
@@ -244,7 +249,7 @@ if __name__ == "__main__":
 
     batch_size_default = 16
     epochs_default = 20
-    learning_rate_default = 1e-4
+    learning_rate_default = 5e-4
     weight_decay_default = 1e-4
     random_seed_default = 42
     bce_weight_default = 0.5

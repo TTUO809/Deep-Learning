@@ -155,7 +155,7 @@ class OxfordPetDataset(Dataset):
                 image = color_jitter(image)
 
         # 統一調整大小。
-        image_size = (416, 416)
+        image_size = (388, 388)
         image = TF.resize(image, image_size, interpolation=TF.InterpolationMode.BILINEAR)
         mask = TF.resize(mask, image_size, interpolation=TF.InterpolationMode.NEAREST)
 
