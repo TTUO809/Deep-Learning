@@ -30,7 +30,7 @@ def download_and_extract(url, extract_to):
                 zip_ref.extractall(extract_to)
         elif file_name.endswith('.tar.gz'):
             with tarfile.open(file_path, 'r:gz') as tar_ref:
-                tar_ref.extractall(extract_to)
+                tar_ref.extractall(extract_to, filter='data')
         else:
             print(f"Unsupported file format for 【{file_name}】. Skipping extraction.")
             return
