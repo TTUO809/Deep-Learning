@@ -1,5 +1,31 @@
+import os
+
 import torch
 import torch.nn as nn
+
+def resolve_model_config(args):
+    '''
+    優先使用使用者指定的模型路徑；若未提供，則依既有規則自動組裝。
+    Args:
+        args (argparse.Namespace): 需包含 model、model_path、save_model_dir 三個欄位。
+    Returns:
+        Tuple[str, str]: (selected_model, model_path)
+    '''
+    selected_model = args.model
+
+    if args.model_path:
+        model_path = args.model_path
+        model_filename = os.path.basename(model_path).lower()
+
+        if 'res_unet' in model_filename:
+            selected_model = 'res_unet'
+        elif 'unet' in model_filename:
+            selected_model = 'unet'
+
+        return selected_model, model_path
+
+    model_path = os.path.join(args.save_model_dir, f"{selected_model}_best.pth")
+    return selected_model, model_path
 
 def cal_dice_score(predict_logits, GT_masks, threshold=0.5, smooth=1e-6, use_pred_binary=True):
     '''

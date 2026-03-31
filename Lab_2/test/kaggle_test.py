@@ -95,8 +95,12 @@ def evaluate_submission(eval_args):
         print(f"✅ 找到現成的標準答案 CSV: {gt_csv_path}")
 
     # 2. 確認 推論提交檔 是否存在
-    tta_suffix = "_tta" if eval_args.tta else ""
-    csv_path = os.path.join(eval_args.csv_dir, f'submission_{eval_args.model}{tta_suffix}.csv')
+    # 優先使用使用者明確指定的 CSV 路徑；若未提供，才使用既有規則自動組路徑。
+    if eval_args.csv_path:
+        csv_path = eval_args.csv_path
+    else:
+        tta_suffix = "_tta" if eval_args.tta else ""
+        csv_path = os.path.join(eval_args.csv_dir, f'submission_{eval_args.model}{tta_suffix}.csv')
     if not os.path.exists(csv_path):
         print(f"❌ 錯誤: 找不到推論 CSV 檔案 {csv_path}！請先執行 inference.py。")
         return
@@ -172,6 +176,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, default=data_dir_default, help=f'Path to the dataset directory (default: {data_dir_default})')
     parser.add_argument('--gt_dir', type=str, default=gt_dir_default, help=f'Path to the ground truth directory (default: {gt_dir_default})')
     parser.add_argument('--csv_dir', type=str, default=csv_dir_default, help=f'Path to your inference CSV file (default: {csv_dir_default})')
+    parser.add_argument('--csv_path', type=str, default='', help='Direct path to submission CSV (overrides --csv_dir/--model/--tta when provided)')
 
     parser.add_argument('--model', type=str, default='unet', choices=['unet', 'res_unet'], help='Model name for evaluation (default: unet)')
 

@@ -10,6 +10,7 @@ from PIL import Image
 from oxford_pet import get_oxford_pet_dataloader
 from models.unet import UNet
 from models.resnet34_unet import ResNet34UNet
+from utils import resolve_model_config
 
 def rle_encode(mask):
     '''
@@ -37,9 +38,11 @@ def inference(infer_args):
         infer_args (argparse.Namespace): 包含所有推理參數。
     '''
 
-    print(f"=============== Start Inference with 【 {infer_args.model} 】 ===============")
+    selected_model, model_path = resolve_model_config(infer_args)
+
+    print(f"=============== Start Inference with 【 {selected_model} 】 ===============")
     print(f"Args:\n - Batch Size: {infer_args.batch_size}\n - TTA: {infer_args.tta}")
-    print(f"Directory:\n - Model: {infer_args.save_model_dir}\n - Output CSV: {infer_args.output_csv_dir}")
+    print(f"Directory:\n - Model: {model_path}\n - Output CSV: {infer_args.output_csv_dir}")
     print("="*60)
     
     # 設置設備 (GPU 或 CPU)。
@@ -47,21 +50,18 @@ def inference(infer_args):
     print(f"Using device: {device}")
 
     # 獲取 DataLoader。
-    print(f"Loading Test Data...(Batch size: {infer_args.batch_size}) \n[From {os.path.join(infer_args.data_dir, f'test_{infer_args.model}.txt')}]")
-    test_loader  = get_oxford_pet_dataloader(root_dir=infer_args.data_dir, split=f'test_{infer_args.model}', batch_size=infer_args.batch_size)
+    print(f"Loading Test Data...(Batch size: {infer_args.batch_size}) \n[From {os.path.join(infer_args.data_dir, f'test_{selected_model}.txt')}]")
+    test_loader  = get_oxford_pet_dataloader(root_dir=infer_args.data_dir, split=f'test_{selected_model}', batch_size=infer_args.batch_size)
     all_image_names = test_loader.dataset.image_names   # 獲取測試集的所有圖像名稱列表，For image_id。
     image_idx = 0                                       # 追蹤當前處理的圖像。
 
     # 初始化模型並移動到 device。
-    if infer_args.model == 'unet':
+    if selected_model == 'unet':
         model = UNet(in_channels=3, out_channels=1).to(device)
-    elif infer_args.model == 'res_unet':
+    elif selected_model == 'res_unet':
         model = ResNet34UNet(in_channels=3, out_channels=1).to(device)
     else:
-        raise ValueError(f"Unsupported model: {infer_args.model}")
-
-    # 自動組裝模型路徑
-    model_path = os.path.join(infer_args.save_model_dir, f"{infer_args.model}_best.pth")
+        raise ValueError(f"Unsupported model: {selected_model}")
 
     # 嘗試加載模型權重。
     print(f"Loading model weights from: {model_path}")
@@ -77,7 +77,7 @@ def inference(infer_args):
 
     # 定義一個內部函數來處理 UNet 的前向傳播，因為 UNet 的輸出圖像大小與輸入圖像大小不匹配，需要進行特殊處理。
     def _forward_unet(images):
-        if infer_args.model == 'unet':
+        if selected_model == 'unet':
             imgs_padded = F.pad(images, (94, 94, 94, 94), mode='reflect') # UNet 的輸出圖像比輸入圖像小 94 像素（每邊），因此需要對輸入圖像進行反射填充以補償這個尺寸差異。
             outputs = model(imgs_padded)
             return outputs[:, :, 2:-2, 2:-2]  # 將 UNet 的輸出圖像裁剪回與原始輸入圖像相同的大小。
@@ -127,7 +127,7 @@ def inference(infer_args):
     os.makedirs(infer_args.output_csv_dir, exist_ok=True)  # 確保輸出目錄存在。
     tta_suffix = "_tta" if infer_args.tta else ""
     thresh_suffix = f"_th{int(infer_args.threshold*100)}" if infer_args.threshold != 0.5 else ""
-    output_csv = os.path.join(infer_args.output_csv_dir, f'submission_{infer_args.model}{tta_suffix}{thresh_suffix}.csv')
+    output_csv = os.path.join(infer_args.output_csv_dir, f'submission_{selected_model}{tta_suffix}{thresh_suffix}.csv')
     
     df = pd.DataFrame(results)
     df.to_csv(output_csv, index=False)
@@ -147,6 +147,7 @@ if __name__ == '__main__':
     output_csv_dir_default = os.path.join(PROJECT_ROOT, 'submission')
     parser.add_argument('--data_dir', type=str, default=data_dir_default, help=f'Path to the dataset directory (default: {data_dir_default})')
     parser.add_argument('--save_model_dir', type=str, default=save_model_dir_default, help=f'Directory to load the trained model (default: {save_model_dir_default})')
+    parser.add_argument('--model_path', type=str, default='', help='Direct path to the model file (overrides auto-generated path; model type will be inferred from filename when possible)')
     parser.add_argument('--output_csv_dir', type=str, default=output_csv_dir_default, help=f'Directory to save the output CSV file for Kaggle submission (default: {output_csv_dir_default})')
 
     parser.add_argument('--model', type=str, default='unet', choices=['unet', 'res_unet'], help='Model name for inference (default: unet)')
