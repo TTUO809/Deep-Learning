@@ -1,0 +1,861 @@
+
+=============== Start Train with 【 unet 】 ===============
+Args:
+ - Batch Size: 16
+ - Epochs: 200
+
+Strategy:
+ - Loss Function: FocalDiceLoss (0.5 * Focal Loss + 0.5 * Dice Loss)
+ - Focal Loss Params: alpha=0.5, gamma=2.0
+ - Optimizer: AdamW (LR: 0.0005, WD: 0.0001)
+ - LR Schedule: Warmup (5 epochs) + Cosine Annealing (T_max: 195 epochs, eta_min: 1e-6)
+ - Early Stopping Patience: 20 epochs
+ - Mixed Precision (AMP): True 
+ - Gradient Clipping: Max Norm = 1.0
+
+Directory:
+ - Output Model: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models
+============================================================
+Using device: cuda
+Loading Train / Validation data...(Batch size: 16) 
+[From /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/train.txt,
+      /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/val.txt]
+============================================================
+
+Epoch 1/200 (LR: 5.000000e-06)
+-> Train Dice: 0.0160 | Train Loss: 0.3712
+-> Val Dice  : 0.2267
+Best model saved with Dice Score: 0.2267. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 2/200 (LR: 1.040000e-04)
+-> Train Dice: 0.4992 | Train Loss: 0.3384
+-> Val Dice  : 0.5272
+Best model saved with Dice Score: 0.5272. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 3/200 (LR: 2.030000e-04)
+-> Train Dice: 0.5536 | Train Loss: 0.3227
+-> Val Dice  : 0.5617
+Best model saved with Dice Score: 0.5617. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 4/200 (LR: 3.020000e-04)
+-> Train Dice: 0.6358 | Train Loss: 0.2793
+-> Val Dice  : 0.6587
+Best model saved with Dice Score: 0.6587. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 5/200 (LR: 4.010000e-04)
+-> Train Dice: 0.7093 | Train Loss: 0.2326
+-> Val Dice  : 0.7269
+Best model saved with Dice Score: 0.7269. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 6/200 (LR: 5.000000e-04)
+-> Train Dice: 0.7438 | Train Loss: 0.2071
+-> Val Dice  : 0.7387
+Best model saved with Dice Score: 0.7387. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 7/200 (LR: 4.999676e-04)
+-> Train Dice: 0.7732 | Train Loss: 0.1863
+-> Val Dice  : 0.7797
+Best model saved with Dice Score: 0.7797. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 8/200 (LR: 4.998705e-04)
+-> Train Dice: 0.7897 | Train Loss: 0.1723
+-> Val Dice  : 0.7458
+Early Stopping Counter: 1 / 20
+
+Epoch 9/200 (LR: 4.997086e-04)
+-> Train Dice: 0.8024 | Train Loss: 0.1634
+-> Val Dice  : 0.8090
+Best model saved with Dice Score: 0.8090. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 10/200 (LR: 4.994821e-04)
+-> Train Dice: 0.8155 | Train Loss: 0.1522
+-> Val Dice  : 0.8118
+Best model saved with Dice Score: 0.8118. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 11/200 (LR: 4.991909e-04)
+-> Train Dice: 0.8235 | Train Loss: 0.1452
+-> Val Dice  : 0.7870
+Early Stopping Counter: 1 / 20
+
+Epoch 12/200 (LR: 4.988352e-04)
+-> Train Dice: 0.8305 | Train Loss: 0.1398
+-> Val Dice  : 0.8105
+Early Stopping Counter: 2 / 20
+
+Epoch 13/200 (LR: 4.984151e-04)
+-> Train Dice: 0.8390 | Train Loss: 0.1339
+-> Val Dice  : 0.8346
+Best model saved with Dice Score: 0.8346. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 14/200 (LR: 4.979306e-04)
+-> Train Dice: 0.8427 | Train Loss: 0.1303
+-> Val Dice  : 0.8477
+Best model saved with Dice Score: 0.8477. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 15/200 (LR: 4.973818e-04)
+-> Train Dice: 0.8490 | Train Loss: 0.1253
+-> Val Dice  : 0.8422
+Early Stopping Counter: 1 / 20
+
+Epoch 16/200 (LR: 4.967690e-04)
+-> Train Dice: 0.8541 | Train Loss: 0.1219
+-> Val Dice  : 0.8509
+Best model saved with Dice Score: 0.8509. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 17/200 (LR: 4.960923e-04)
+-> Train Dice: 0.8565 | Train Loss: 0.1201
+-> Val Dice  : 0.8496
+Early Stopping Counter: 1 / 20
+
+Epoch 18/200 (LR: 4.953518e-04)
+-> Train Dice: 0.8573 | Train Loss: 0.1188
+-> Val Dice  : 0.8306
+Early Stopping Counter: 2 / 20
+
+Epoch 19/200 (LR: 4.945478e-04)
+-> Train Dice: 0.8624 | Train Loss: 0.1145
+-> Val Dice  : 0.8598
+Best model saved with Dice Score: 0.8598. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 20/200 (LR: 4.936805e-04)
+-> Train Dice: 0.8662 | Train Loss: 0.1116
+-> Val Dice  : 0.8624
+Best model saved with Dice Score: 0.8624. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 21/200 (LR: 4.927500e-04)
+-> Train Dice: 0.8696 | Train Loss: 0.1088
+-> Val Dice  : 0.8523
+Early Stopping Counter: 1 / 20
+
+Epoch 22/200 (LR: 4.917566e-04)
+-> Train Dice: 0.8698 | Train Loss: 0.1091
+-> Val Dice  : 0.8649
+Best model saved with Dice Score: 0.8649. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 23/200 (LR: 4.907007e-04)
+-> Train Dice: 0.8740 | Train Loss: 0.1058
+-> Val Dice  : 0.8652
+Best model saved with Dice Score: 0.8652. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 24/200 (LR: 4.895823e-04)
+-> Train Dice: 0.8745 | Train Loss: 0.1050
+-> Val Dice  : 0.8693
+Best model saved with Dice Score: 0.8693. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 25/200 (LR: 4.884020e-04)
+-> Train Dice: 0.8757 | Train Loss: 0.1043
+-> Val Dice  : 0.8193
+Early Stopping Counter: 1 / 20
+
+Epoch 26/200 (LR: 4.871598e-04)
+-> Train Dice: 0.8791 | Train Loss: 0.1017
+-> Val Dice  : 0.8677
+Early Stopping Counter: 2 / 20
+
+Epoch 27/200 (LR: 4.858563e-04)
+-> Train Dice: 0.8815 | Train Loss: 0.0997
+-> Val Dice  : 0.8658
+Early Stopping Counter: 3 / 20
+
+Epoch 28/200 (LR: 4.844917e-04)
+-> Train Dice: 0.8801 | Train Loss: 0.1007
+-> Val Dice  : 0.8609
+Early Stopping Counter: 4 / 20
+
+Epoch 29/200 (LR: 4.830663e-04)
+-> Train Dice: 0.8835 | Train Loss: 0.0981
+-> Val Dice  : 0.8639
+Early Stopping Counter: 5 / 20
+
+Epoch 30/200 (LR: 4.815806e-04)
+-> Train Dice: 0.8864 | Train Loss: 0.0952
+-> Val Dice  : 0.8765
+Best model saved with Dice Score: 0.8765. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 31/200 (LR: 4.800349e-04)
+-> Train Dice: 0.8871 | Train Loss: 0.0950
+-> Val Dice  : 0.8772
+Best model saved with Dice Score: 0.8772. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 32/200 (LR: 4.784296e-04)
+-> Train Dice: 0.8868 | Train Loss: 0.0955
+-> Val Dice  : 0.8560
+Early Stopping Counter: 1 / 20
+
+Epoch 33/200 (LR: 4.767652e-04)
+-> Train Dice: 0.8903 | Train Loss: 0.0927
+-> Val Dice  : 0.8717
+Early Stopping Counter: 2 / 20
+
+Epoch 34/200 (LR: 4.750420e-04)
+-> Train Dice: 0.8905 | Train Loss: 0.0919
+-> Val Dice  : 0.8680
+Early Stopping Counter: 3 / 20
+
+Epoch 35/200 (LR: 4.732605e-04)
+-> Train Dice: 0.8931 | Train Loss: 0.0896
+-> Val Dice  : 0.8647
+Early Stopping Counter: 4 / 20
+
+Epoch 36/200 (LR: 4.714213e-04)
+-> Train Dice: 0.8934 | Train Loss: 0.0898
+-> Val Dice  : 0.8731
+Early Stopping Counter: 5 / 20
+
+Epoch 37/200 (LR: 4.695247e-04)
+-> Train Dice: 0.8947 | Train Loss: 0.0886
+-> Val Dice  : 0.8762
+Early Stopping Counter: 6 / 20
+
+Epoch 38/200 (LR: 4.675712e-04)
+-> Train Dice: 0.8959 | Train Loss: 0.0880
+-> Val Dice  : 0.8837
+Best model saved with Dice Score: 0.8837. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 39/200 (LR: 4.655614e-04)
+-> Train Dice: 0.8954 | Train Loss: 0.0881
+-> Val Dice  : 0.8815
+Early Stopping Counter: 1 / 20
+
+Epoch 40/200 (LR: 4.634958e-04)
+-> Train Dice: 0.8990 | Train Loss: 0.0852
+-> Val Dice  : 0.8631
+Early Stopping Counter: 2 / 20
+
+Epoch 41/200 (LR: 4.613749e-04)
+-> Train Dice: 0.8992 | Train Loss: 0.0850
+-> Val Dice  : 0.8840
+Best model saved with Dice Score: 0.8840. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 42/200 (LR: 4.591993e-04)
+-> Train Dice: 0.9012 | Train Loss: 0.0834
+-> Val Dice  : 0.8879
+Best model saved with Dice Score: 0.8879. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 43/200 (LR: 4.569695e-04)
+-> Train Dice: 0.9012 | Train Loss: 0.0834
+-> Val Dice  : 0.8814
+Early Stopping Counter: 1 / 20
+
+Epoch 44/200 (LR: 4.546861e-04)
+-> Train Dice: 0.9021 | Train Loss: 0.0825
+-> Val Dice  : 0.8710
+Early Stopping Counter: 2 / 20
+
+Epoch 45/200 (LR: 4.523497e-04)
+-> Train Dice: 0.9027 | Train Loss: 0.0824
+-> Val Dice  : 0.8874
+Early Stopping Counter: 3 / 20
+
+Epoch 46/200 (LR: 4.499610e-04)
+-> Train Dice: 0.9028 | Train Loss: 0.0819
+-> Val Dice  : 0.8808
+Early Stopping Counter: 4 / 20
+
+Epoch 47/200 (LR: 4.475204e-04)
+-> Train Dice: 0.9062 | Train Loss: 0.0792
+-> Val Dice  : 0.8883
+Best model saved with Dice Score: 0.8883. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 48/200 (LR: 4.450288e-04)
+-> Train Dice: 0.9051 | Train Loss: 0.0800
+-> Val Dice  : 0.8888
+Best model saved with Dice Score: 0.8888. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 49/200 (LR: 4.424866e-04)
+-> Train Dice: 0.9084 | Train Loss: 0.0773
+-> Val Dice  : 0.8837
+Early Stopping Counter: 1 / 20
+
+Epoch 50/200 (LR: 4.398946e-04)
+-> Train Dice: 0.9072 | Train Loss: 0.0785
+-> Val Dice  : 0.8926
+Best model saved with Dice Score: 0.8926. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 51/200 (LR: 4.372534e-04)
+-> Train Dice: 0.9091 | Train Loss: 0.0768
+-> Val Dice  : 0.8881
+Early Stopping Counter: 1 / 20
+
+Epoch 52/200 (LR: 4.345638e-04)
+-> Train Dice: 0.9085 | Train Loss: 0.0772
+-> Val Dice  : 0.8897
+Early Stopping Counter: 2 / 20
+
+Epoch 53/200 (LR: 4.318264e-04)
+-> Train Dice: 0.9095 | Train Loss: 0.0760
+-> Val Dice  : 0.8892
+Early Stopping Counter: 3 / 20
+
+Epoch 54/200 (LR: 4.290419e-04)
+-> Train Dice: 0.9114 | Train Loss: 0.0751
+-> Val Dice  : 0.8874
+Early Stopping Counter: 4 / 20
+
+Epoch 55/200 (LR: 4.262111e-04)
+-> Train Dice: 0.9115 | Train Loss: 0.0742
+-> Val Dice  : 0.8893
+Early Stopping Counter: 5 / 20
+
+Epoch 56/200 (LR: 4.233347e-04)
+-> Train Dice: 0.9118 | Train Loss: 0.0743
+-> Val Dice  : 0.8833
+Early Stopping Counter: 6 / 20
+
+Epoch 57/200 (LR: 4.204135e-04)
+-> Train Dice: 0.9138 | Train Loss: 0.0730
+-> Val Dice  : 0.8932
+Best model saved with Dice Score: 0.8932. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 58/200 (LR: 4.174481e-04)
+-> Train Dice: 0.9132 | Train Loss: 0.0731
+-> Val Dice  : 0.8863
+Early Stopping Counter: 1 / 20
+
+Epoch 59/200 (LR: 4.144394e-04)
+-> Train Dice: 0.9136 | Train Loss: 0.0727
+-> Val Dice  : 0.8906
+Early Stopping Counter: 2 / 20
+
+Epoch 60/200 (LR: 4.113881e-04)
+-> Train Dice: 0.9149 | Train Loss: 0.0720
+-> Val Dice  : 0.8920
+Early Stopping Counter: 3 / 20
+
+Epoch 61/200 (LR: 4.082951e-04)
+-> Train Dice: 0.9167 | Train Loss: 0.0702
+-> Val Dice  : 0.8941
+Best model saved with Dice Score: 0.8941. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 62/200 (LR: 4.051612e-04)
+-> Train Dice: 0.9162 | Train Loss: 0.0706
+-> Val Dice  : 0.8657
+Early Stopping Counter: 1 / 20
+
+Epoch 63/200 (LR: 4.019870e-04)
+-> Train Dice: 0.9166 | Train Loss: 0.0701
+-> Val Dice  : 0.8921
+Early Stopping Counter: 2 / 20
+
+Epoch 64/200 (LR: 3.987736e-04)
+-> Train Dice: 0.9170 | Train Loss: 0.0698
+-> Val Dice  : 0.8851
+Early Stopping Counter: 3 / 20
+
+Epoch 65/200 (LR: 3.955217e-04)
+-> Train Dice: 0.9186 | Train Loss: 0.0686
+-> Val Dice  : 0.8983
+Best model saved with Dice Score: 0.8983. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 66/200 (LR: 3.922322e-04)
+-> Train Dice: 0.9181 | Train Loss: 0.0689
+-> Val Dice  : 0.8911
+Early Stopping Counter: 1 / 20
+
+Epoch 67/200 (LR: 3.889058e-04)
+-> Train Dice: 0.9200 | Train Loss: 0.0673
+-> Val Dice  : 0.8894
+Early Stopping Counter: 2 / 20
+
+Epoch 68/200 (LR: 3.855436e-04)
+-> Train Dice: 0.9196 | Train Loss: 0.0673
+-> Val Dice  : 0.8730
+Early Stopping Counter: 3 / 20
+
+Epoch 69/200 (LR: 3.821462e-04)
+-> Train Dice: 0.9206 | Train Loss: 0.0667
+-> Val Dice  : 0.8955
+Early Stopping Counter: 4 / 20
+
+Epoch 70/200 (LR: 3.787148e-04)
+-> Train Dice: 0.9207 | Train Loss: 0.0664
+-> Val Dice  : 0.8889
+Early Stopping Counter: 5 / 20
+
+Epoch 71/200 (LR: 3.752500e-04)
+-> Train Dice: 0.9219 | Train Loss: 0.0657
+-> Val Dice  : 0.8914
+Early Stopping Counter: 6 / 20
+
+Epoch 72/200 (LR: 3.717529e-04)
+-> Train Dice: 0.9213 | Train Loss: 0.0660
+-> Val Dice  : 0.8978
+Early Stopping Counter: 7 / 20
+
+Epoch 73/200 (LR: 3.682243e-04)
+-> Train Dice: 0.9228 | Train Loss: 0.0648
+-> Val Dice  : 0.8897
+Early Stopping Counter: 8 / 20
+
+Epoch 74/200 (LR: 3.646651e-04)
+-> Train Dice: 0.9245 | Train Loss: 0.0637
+-> Val Dice  : 0.8956
+Early Stopping Counter: 9 / 20
+
+Epoch 75/200 (LR: 3.610763e-04)
+-> Train Dice: 0.9238 | Train Loss: 0.0640
+-> Val Dice  : 0.8932
+Early Stopping Counter: 10 / 20
+
+Epoch 76/200 (LR: 3.574588e-04)
+-> Train Dice: 0.9244 | Train Loss: 0.0633
+-> Val Dice  : 0.8974
+Early Stopping Counter: 11 / 20
+
+Epoch 77/200 (LR: 3.538135e-04)
+-> Train Dice: 0.9248 | Train Loss: 0.0630
+-> Val Dice  : 0.8995
+Best model saved with Dice Score: 0.8995. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 78/200 (LR: 3.501415e-04)
+-> Train Dice: 0.9243 | Train Loss: 0.0634
+-> Val Dice  : 0.8963
+Early Stopping Counter: 1 / 20
+
+Epoch 79/200 (LR: 3.464435e-04)
+-> Train Dice: 0.9266 | Train Loss: 0.0616
+-> Val Dice  : 0.8977
+Early Stopping Counter: 2 / 20
+
+Epoch 80/200 (LR: 3.427207e-04)
+-> Train Dice: 0.9262 | Train Loss: 0.0620
+-> Val Dice  : 0.8951
+Early Stopping Counter: 3 / 20
+
+Epoch 81/200 (LR: 3.389739e-04)
+-> Train Dice: 0.9281 | Train Loss: 0.0605
+-> Val Dice  : 0.8988
+Early Stopping Counter: 4 / 20
+
+Epoch 82/200 (LR: 3.352042e-04)
+-> Train Dice: 0.9267 | Train Loss: 0.0612
+-> Val Dice  : 0.8969
+Early Stopping Counter: 5 / 20
+
+Epoch 83/200 (LR: 3.314125e-04)
+-> Train Dice: 0.9276 | Train Loss: 0.0606
+-> Val Dice  : 0.8945
+Early Stopping Counter: 6 / 20
+
+Epoch 84/200 (LR: 3.275997e-04)
+-> Train Dice: 0.9284 | Train Loss: 0.0600
+-> Val Dice  : 0.8999
+Best model saved with Dice Score: 0.8999. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 85/200 (LR: 3.237670e-04)
+-> Train Dice: 0.9292 | Train Loss: 0.0593
+-> Val Dice  : 0.8996
+Early Stopping Counter: 1 / 20
+
+Epoch 86/200 (LR: 3.199153e-04)
+-> Train Dice: 0.9301 | Train Loss: 0.0585
+-> Val Dice  : 0.8992
+Early Stopping Counter: 2 / 20
+
+Epoch 87/200 (LR: 3.160455e-04)
+-> Train Dice: 0.9298 | Train Loss: 0.0587
+-> Val Dice  : 0.8997
+Early Stopping Counter: 3 / 20
+
+Epoch 88/200 (LR: 3.121587e-04)
+-> Train Dice: 0.9298 | Train Loss: 0.0587
+-> Val Dice  : 0.8945
+Early Stopping Counter: 4 / 20
+
+Epoch 89/200 (LR: 3.082559e-04)
+-> Train Dice: 0.9311 | Train Loss: 0.0574
+-> Val Dice  : 0.8938
+Early Stopping Counter: 5 / 20
+
+Epoch 90/200 (LR: 3.043382e-04)
+-> Train Dice: 0.9319 | Train Loss: 0.0568
+-> Val Dice  : 0.8990
+Early Stopping Counter: 6 / 20
+
+Epoch 91/200 (LR: 3.004064e-04)
+-> Train Dice: 0.9316 | Train Loss: 0.0570
+-> Val Dice  : 0.8941
+Early Stopping Counter: 7 / 20
+
+Epoch 92/200 (LR: 2.964617e-04)
+-> Train Dice: 0.9324 | Train Loss: 0.0565
+-> Val Dice  : 0.8978
+Early Stopping Counter: 8 / 20
+
+Epoch 93/200 (LR: 2.925051e-04)
+-> Train Dice: 0.9321 | Train Loss: 0.0566
+-> Val Dice  : 0.8925
+Early Stopping Counter: 9 / 20
+
+Epoch 94/200 (LR: 2.885376e-04)
+-> Train Dice: 0.9332 | Train Loss: 0.0556
+-> Val Dice  : 0.8976
+Early Stopping Counter: 10 / 20
+
+Epoch 95/200 (LR: 2.845601e-04)
+-> Train Dice: 0.9339 | Train Loss: 0.0550
+-> Val Dice  : 0.8995
+Early Stopping Counter: 11 / 20
+
+Epoch 96/200 (LR: 2.805739e-04)
+-> Train Dice: 0.9326 | Train Loss: 0.0561
+-> Val Dice  : 0.8941
+Early Stopping Counter: 12 / 20
+
+Epoch 97/200 (LR: 2.765799e-04)
+-> Train Dice: 0.9348 | Train Loss: 0.0543
+-> Val Dice  : 0.9003
+Best model saved with Dice Score: 0.9003. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 98/200 (LR: 2.725790e-04)
+-> Train Dice: 0.9340 | Train Loss: 0.0551
+-> Val Dice  : 0.9033
+Best model saved with Dice Score: 0.9033. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 99/200 (LR: 2.685725e-04)
+-> Train Dice: 0.9353 | Train Loss: 0.0536
+-> Val Dice  : 0.9004
+Early Stopping Counter: 1 / 20
+
+Epoch 100/200 (LR: 2.645612e-04)
+-> Train Dice: 0.9361 | Train Loss: 0.0529
+-> Val Dice  : 0.9016
+Early Stopping Counter: 2 / 20
+
+Epoch 101/200 (LR: 2.605464e-04)
+-> Train Dice: 0.9355 | Train Loss: 0.0536
+-> Val Dice  : 0.8984
+Early Stopping Counter: 3 / 20
+
+Epoch 102/200 (LR: 2.565289e-04)
+-> Train Dice: 0.9369 | Train Loss: 0.0523
+-> Val Dice  : 0.9042
+Best model saved with Dice Score: 0.9042. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 103/200 (LR: 2.525098e-04)
+-> Train Dice: 0.9365 | Train Loss: 0.0526
+-> Val Dice  : 0.9027
+Early Stopping Counter: 1 / 20
+
+Epoch 104/200 (LR: 2.484902e-04)
+-> Train Dice: 0.9369 | Train Loss: 0.0523
+-> Val Dice  : 0.9035
+Early Stopping Counter: 2 / 20
+
+Epoch 105/200 (LR: 2.444711e-04)
+-> Train Dice: 0.9364 | Train Loss: 0.0524
+-> Val Dice  : 0.9011
+Early Stopping Counter: 3 / 20
+
+Epoch 106/200 (LR: 2.404536e-04)
+-> Train Dice: 0.9372 | Train Loss: 0.0518
+-> Val Dice  : 0.9017
+Early Stopping Counter: 4 / 20
+
+Epoch 107/200 (LR: 2.364388e-04)
+-> Train Dice: 0.9383 | Train Loss: 0.0509
+-> Val Dice  : 0.9037
+Early Stopping Counter: 5 / 20
+
+Epoch 108/200 (LR: 2.324275e-04)
+-> Train Dice: 0.9377 | Train Loss: 0.0515
+-> Val Dice  : 0.8959
+Early Stopping Counter: 6 / 20
+
+Epoch 109/200 (LR: 2.284210e-04)
+-> Train Dice: 0.9387 | Train Loss: 0.0507
+-> Val Dice  : 0.9032
+Early Stopping Counter: 7 / 20
+
+Epoch 110/200 (LR: 2.244201e-04)
+-> Train Dice: 0.9391 | Train Loss: 0.0501
+-> Val Dice  : 0.8876
+Early Stopping Counter: 8 / 20
+
+Epoch 111/200 (LR: 2.204261e-04)
+-> Train Dice: 0.9393 | Train Loss: 0.0500
+-> Val Dice  : 0.9039
+Early Stopping Counter: 9 / 20
+
+Epoch 112/200 (LR: 2.164399e-04)
+-> Train Dice: 0.9401 | Train Loss: 0.0492
+-> Val Dice  : 0.9020
+Early Stopping Counter: 10 / 20
+
+Epoch 113/200 (LR: 2.124624e-04)
+-> Train Dice: 0.9403 | Train Loss: 0.0491
+-> Val Dice  : 0.9015
+Early Stopping Counter: 11 / 20
+
+Epoch 114/200 (LR: 2.084949e-04)
+-> Train Dice: 0.9406 | Train Loss: 0.0490
+-> Val Dice  : 0.8958
+Early Stopping Counter: 12 / 20
+
+Epoch 115/200 (LR: 2.045383e-04)
+-> Train Dice: 0.9410 | Train Loss: 0.0486
+-> Val Dice  : 0.9040
+Early Stopping Counter: 13 / 20
+
+Epoch 116/200 (LR: 2.005936e-04)
+-> Train Dice: 0.9411 | Train Loss: 0.0483
+-> Val Dice  : 0.9026
+Early Stopping Counter: 14 / 20
+
+Epoch 117/200 (LR: 1.966618e-04)
+-> Train Dice: 0.9409 | Train Loss: 0.0484
+-> Val Dice  : 0.9021
+Early Stopping Counter: 15 / 20
+
+Epoch 118/200 (LR: 1.927441e-04)
+-> Train Dice: 0.9413 | Train Loss: 0.0482
+-> Val Dice  : 0.9052
+Best model saved with Dice Score: 0.9052. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 119/200 (LR: 1.888413e-04)
+-> Train Dice: 0.9424 | Train Loss: 0.0471
+-> Val Dice  : 0.9026
+Early Stopping Counter: 1 / 20
+
+Epoch 120/200 (LR: 1.849545e-04)
+-> Train Dice: 0.9416 | Train Loss: 0.0479
+-> Val Dice  : 0.9055
+Best model saved with Dice Score: 0.9055. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 121/200 (LR: 1.810847e-04)
+-> Train Dice: 0.9426 | Train Loss: 0.0471
+-> Val Dice  : 0.9022
+Early Stopping Counter: 1 / 20
+
+Epoch 122/200 (LR: 1.772330e-04)
+-> Train Dice: 0.9426 | Train Loss: 0.0471
+-> Val Dice  : 0.9050
+Early Stopping Counter: 2 / 20
+
+Epoch 123/200 (LR: 1.734003e-04)
+-> Train Dice: 0.9434 | Train Loss: 0.0463
+-> Val Dice  : 0.8996
+Early Stopping Counter: 3 / 20
+
+Epoch 124/200 (LR: 1.695875e-04)
+-> Train Dice: 0.9436 | Train Loss: 0.0460
+-> Val Dice  : 0.9059
+Best model saved with Dice Score: 0.9059. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 125/200 (LR: 1.657958e-04)
+-> Train Dice: 0.9431 | Train Loss: 0.0465
+-> Val Dice  : 0.9033
+Early Stopping Counter: 1 / 20
+
+Epoch 126/200 (LR: 1.620261e-04)
+-> Train Dice: 0.9438 | Train Loss: 0.0460
+-> Val Dice  : 0.9018
+Early Stopping Counter: 2 / 20
+
+Epoch 127/200 (LR: 1.582793e-04)
+-> Train Dice: 0.9440 | Train Loss: 0.0457
+-> Val Dice  : 0.9043
+Early Stopping Counter: 3 / 20
+
+Epoch 128/200 (LR: 1.545565e-04)
+-> Train Dice: 0.9437 | Train Loss: 0.0461
+-> Val Dice  : 0.8988
+Early Stopping Counter: 4 / 20
+
+Epoch 129/200 (LR: 1.508585e-04)
+-> Train Dice: 0.9445 | Train Loss: 0.0453
+-> Val Dice  : 0.9041
+Early Stopping Counter: 5 / 20
+
+Epoch 130/200 (LR: 1.471865e-04)
+-> Train Dice: 0.9450 | Train Loss: 0.0448
+-> Val Dice  : 0.9051
+Early Stopping Counter: 6 / 20
+
+Epoch 131/200 (LR: 1.435412e-04)
+-> Train Dice: 0.9448 | Train Loss: 0.0451
+-> Val Dice  : 0.9019
+Early Stopping Counter: 7 / 20
+
+Epoch 132/200 (LR: 1.399237e-04)
+-> Train Dice: 0.9451 | Train Loss: 0.0446
+-> Val Dice  : 0.9043
+Early Stopping Counter: 8 / 20
+
+Epoch 133/200 (LR: 1.363349e-04)
+-> Train Dice: 0.9458 | Train Loss: 0.0441
+-> Val Dice  : 0.9040
+Early Stopping Counter: 9 / 20
+
+Epoch 134/200 (LR: 1.327757e-04)
+-> Train Dice: 0.9455 | Train Loss: 0.0443
+-> Val Dice  : 0.9018
+Early Stopping Counter: 10 / 20
+
+Epoch 135/200 (LR: 1.292471e-04)
+-> Train Dice: 0.9461 | Train Loss: 0.0438
+-> Val Dice  : 0.9033
+Early Stopping Counter: 11 / 20
+
+Epoch 136/200 (LR: 1.257500e-04)
+-> Train Dice: 0.9459 | Train Loss: 0.0439
+-> Val Dice  : 0.9051
+Early Stopping Counter: 12 / 20
+
+Epoch 137/200 (LR: 1.222852e-04)
+-> Train Dice: 0.9463 | Train Loss: 0.0436
+-> Val Dice  : 0.9050
+Early Stopping Counter: 13 / 20
+
+Epoch 138/200 (LR: 1.188538e-04)
+-> Train Dice: 0.9462 | Train Loss: 0.0437
+-> Val Dice  : 0.9019
+Early Stopping Counter: 14 / 20
+
+Epoch 139/200 (LR: 1.154564e-04)
+-> Train Dice: 0.9472 | Train Loss: 0.0428
+-> Val Dice  : 0.9048
+Early Stopping Counter: 15 / 20
+
+Epoch 140/200 (LR: 1.120942e-04)
+-> Train Dice: 0.9467 | Train Loss: 0.0432
+-> Val Dice  : 0.9052
+Early Stopping Counter: 16 / 20
+
+Epoch 141/200 (LR: 1.087678e-04)
+-> Train Dice: 0.9465 | Train Loss: 0.0433
+-> Val Dice  : 0.9057
+Early Stopping Counter: 17 / 20
+
+Epoch 142/200 (LR: 1.054783e-04)
+-> Train Dice: 0.9473 | Train Loss: 0.0427
+-> Val Dice  : 0.9016
+Early Stopping Counter: 18 / 20
+
+Epoch 143/200 (LR: 1.022264e-04)
+-> Train Dice: 0.9477 | Train Loss: 0.0424
+-> Val Dice  : 0.9061
+Best model saved with Dice Score: 0.9061. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 144/200 (LR: 9.901295e-05)
+-> Train Dice: 0.9475 | Train Loss: 0.0424
+-> Val Dice  : 0.9064
+Best model saved with Dice Score: 0.9064. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 145/200 (LR: 9.583885e-05)
+-> Train Dice: 0.9478 | Train Loss: 0.0421
+-> Val Dice  : 0.9080
+Best model saved with Dice Score: 0.9080. Saved at: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+
+Epoch 146/200 (LR: 9.270488e-05)
+-> Train Dice: 0.9481 | Train Loss: 0.0420
+-> Val Dice  : 0.9060
+Early Stopping Counter: 1 / 20
+
+Epoch 147/200 (LR: 8.961187e-05)
+-> Train Dice: 0.9480 | Train Loss: 0.0420
+-> Val Dice  : 0.9068
+Early Stopping Counter: 2 / 20
+
+Epoch 148/200 (LR: 8.656062e-05)
+-> Train Dice: 0.9483 | Train Loss: 0.0416
+-> Val Dice  : 0.9067
+Early Stopping Counter: 3 / 20
+
+Epoch 149/200 (LR: 8.355191e-05)
+-> Train Dice: 0.9485 | Train Loss: 0.0416
+-> Val Dice  : 0.9059
+Early Stopping Counter: 4 / 20
+
+Epoch 150/200 (LR: 8.058654e-05)
+-> Train Dice: 0.9487 | Train Loss: 0.0413
+-> Val Dice  : 0.9038
+Early Stopping Counter: 5 / 20
+
+Epoch 151/200 (LR: 7.766527e-05)
+-> Train Dice: 0.9491 | Train Loss: 0.0410
+-> Val Dice  : 0.9053
+Early Stopping Counter: 6 / 20
+
+Epoch 152/200 (LR: 7.478886e-05)
+-> Train Dice: 0.9493 | Train Loss: 0.0408
+-> Val Dice  : 0.9064
+Early Stopping Counter: 7 / 20
+
+Epoch 153/200 (LR: 7.195806e-05)
+-> Train Dice: 0.9493 | Train Loss: 0.0411
+-> Val Dice  : 0.9047
+Early Stopping Counter: 8 / 20
+
+Epoch 154/200 (LR: 6.917360e-05)
+-> Train Dice: 0.9493 | Train Loss: 0.0408
+-> Val Dice  : 0.9067
+Early Stopping Counter: 9 / 20
+
+Epoch 155/200 (LR: 6.643620e-05)
+-> Train Dice: 0.9495 | Train Loss: 0.0407
+-> Val Dice  : 0.9061
+Early Stopping Counter: 10 / 20
+
+Epoch 156/200 (LR: 6.374657e-05)
+-> Train Dice: 0.9495 | Train Loss: 0.0406
+-> Val Dice  : 0.9065
+Early Stopping Counter: 11 / 20
+
+Epoch 157/200 (LR: 6.110541e-05)
+-> Train Dice: 0.9495 | Train Loss: 0.0407
+-> Val Dice  : 0.9068
+Early Stopping Counter: 12 / 20
+
+Epoch 158/200 (LR: 5.851342e-05)
+-> Train Dice: 0.9499 | Train Loss: 0.0402
+-> Val Dice  : 0.9049
+Early Stopping Counter: 13 / 20
+
+Epoch 159/200 (LR: 5.597125e-05)
+-> Train Dice: 0.9502 | Train Loss: 0.0401
+-> Val Dice  : 0.9064
+Early Stopping Counter: 14 / 20
+
+Epoch 160/200 (LR: 5.347957e-05)
+-> Train Dice: 0.9501 | Train Loss: 0.0400
+-> Val Dice  : 0.9056
+Early Stopping Counter: 15 / 20
+
+Epoch 161/200 (LR: 5.103903e-05)
+-> Train Dice: 0.9502 | Train Loss: 0.0401
+-> Val Dice  : 0.9067
+Early Stopping Counter: 16 / 20
+
+Epoch 162/200 (LR: 4.865026e-05)
+-> Train Dice: 0.9503 | Train Loss: 0.0399
+-> Val Dice  : 0.9049
+Early Stopping Counter: 17 / 20
+
+Epoch 163/200 (LR: 4.631388e-05)
+-> Train Dice: 0.9506 | Train Loss: 0.0396
+-> Val Dice  : 0.9046
+Early Stopping Counter: 18 / 20
+
+Epoch 164/200 (LR: 4.403050e-05)
+-> Train Dice: 0.9507 | Train Loss: 0.0394
+-> Val Dice  : 0.9049
+Early Stopping Counter: 19 / 20
+
+Epoch 165/200 (LR: 4.180070e-05)
+-> Train Dice: 0.9504 | Train Loss: 0.0399
+-> Val Dice  : 0.9057
+Early Stopping Counter: 20 / 20
+
+Early Stopping !!!
+
+========================================
+Training completed.
+ > Best Val Dice Score: 0.9080 at epoch 145.
+========================================
+****
+Time:
+ - Train: 02:36, 2.07it/s
+ - Val  : 00:07, 6.60it/s
+ - Total : 165 epochs, 165 * (02:36 + 00:07) = 165 * 2.7167 min = 448.250 min = 7.471 hr
+****

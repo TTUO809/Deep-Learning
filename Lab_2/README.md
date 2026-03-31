@@ -150,9 +150,20 @@ python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
     --threshold_step 0.05
 ```
 
+### 使用自訂模型路徑評估
+
+若要評估特定的模型權重檔（而非自動組合 `saved_models/{model}_best.pth`），使用 `--model_path`：
+
+```bash
+python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
+    --model_path ./DL_Lab2_B11107122_凃岳霖/saved_models/20260329/unet_best_145e.pth \
+    --auto_threshold
+```
+
 | 參數 | 預設值 | 說明 |
 |------|--------|------|
 | `--model` | `unet` | `unet` / `res_unet` |
+| `--model_path` | — | 直接指定模型權重檔路徑（優先於自動組路徑；模型類型會從檔名推斷）|
 | `--threshold` | `0.5` | 單一 threshold 模式下使用 |
 | `--auto_threshold` | — | 啟用自動掃描模式 |
 | `--threshold_start` | `0.3` | 掃描起始值 |
@@ -163,6 +174,8 @@ python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
 ---
 
 ## 推理（產生 Kaggle 提交 CSV）
+
+### 基本推理
 
 ```bash
 # 基本推理
@@ -175,9 +188,21 @@ python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta
 python DL_Lab2_B11107122_凃岳霖/src/inference.py --model res_unet --tta --threshold 0.45
 ```
 
+### 使用自訂模型路徑推理
+
+使用 `--model_path` 指定特定的模型權重檔：
+
+```bash
+python DL_Lab2_B11107122_凃岳霖/src/inference.py \
+    --model_path ./DL_Lab2_B11107122_凃岳霖/saved_models/20260329/res_unet_best_168e.pth \
+    --tta \
+    --threshold 0.45
+```
+
 | 參數 | 預設值 | 說明 |
 |------|--------|------|
 | `--model` | `unet` | `unet` / `res_unet` |
+| `--model_path` | — | 直接指定模型權重檔路徑（優先於自動組路徑；模型類型會從檔名推斷）|
 | `--threshold` | `0.5` | 二值化閾值 |
 | `--tta` | — | 啟用 TTA（水平、垂直、雙向翻轉取平均）|
 | `--batch_size` | `16` | Batch size |
@@ -195,6 +220,8 @@ submission_{model}[_tta][_th{threshold*100}].csv
 
 用來在本地計算與 Kaggle 相同的 Dice Score，驗證提交結果。
 
+### 基本評估
+
 ```bash
 # 工作目錄：Lab_2/
 
@@ -206,22 +233,31 @@ python test/kaggle_test.py --model unet --tta
 
 # 評估 ResNet34-UNet
 python test/kaggle_test.py --model res_unet --tta
+```
 
-# 直接指定 CSV 路徑（優先於自動組路徑）
-python test/kaggle_test.py --model unet --csv_path /path/to/your/submission.csv
+### 使用自訂 CSV 路徑評估
+
+優先使用明確指定的 CSV 檔案路徑：
+
+```bash
+python test/kaggle_test.py \
+    --model unet \
+    --csv_path ./DL_Lab2_B11107122_凃岳霖/submission/submission_unet_tta.csv
 ```
 
 | 參數 | 預設值 | 說明 |
 |------|--------|------|
 | `--model` | `unet` | `unet` / `res_unet` |
 | `--tta` | — | 對應 TTA 推理結果的 CSV |
-| `--csv_path` | — | 直接指定 CSV 路徑（覆蓋自動組路徑）|
+| `--csv_path` | — | 直接指定 CSV 路徑（優先於自動組路徑）|
 
 首次執行會自動從 `trimaps/` 產生 Ground Truth CSV（`test/gt_test_{model}.csv`）並快取，之後直接讀取。
 
 ---
 
 ## 完整執行流程總覽
+
+### 快速開始
 
 ```bash
 # 1. 安裝環境
@@ -242,4 +278,67 @@ python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta --thresho
 
 # 6. 本地評估
 python test/kaggle_test.py --model unet --tta
+```
+
+---
+
+## 實際測試命令
+
+基於實驗結果的建議執行流程（200 epoch、early stopping patience 20）。
+
+### UNET 完整流程
+
+```bash
+# 訓練（約 7.5 小時）
+python DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 200 --early_stop_patience 20 | tee train_unet.log
+
+# 驗證集評估並自動掃描最佳 threshold
+python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --auto_threshold | tee eval_unet.log
+
+# 推理（使用 TTA 提升準確度）
+python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta | tee infer_unet.log
+
+# 本地 Kaggle 評估
+python test/kaggle_test.py --model unet --tta | tee kaggle_unet.log
+```
+
+**預期結果**：Best Val Dice ~0.908
+
+### ResNet34-UNet 完整流程
+
+```bash
+# 訓練
+python DL_Lab2_B11107122_凃岳霖/src/train.py --model res_unet --epochs 200 --early_stop_patience 20 | tee train_res_unet.log
+
+# 驗證集評估並自動掃描最佳 threshold
+python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model res_unet --auto_threshold | tee eval_res_unet.log
+
+# 推理（使用自訂 threshold 0.45 與 TTA）
+python DL_Lab2_B11107122_凃岳霖/src/inference.py --model res_unet --threshold 0.45 --tta | tee infer_res_unet.log
+
+# 本地 Kaggle 評估
+python test/kaggle_test.py --model res_unet --tta | tee kaggle_res_unet.log
+```
+
+**預期結果**：Best Val Dice ~0.926
+
+### UNET
+```
+python DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 200 --early_stop_patience 20 | tee train_unet.log
+
+python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --auto_threshold | tee eval_unet.log
+
+python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta | tee infer_unet.log
+
+python test/kaggle_test.py --model unet --tta | tee kaggle_unet.log
+```
+### ResNet34 + UNet
+```
+python DL_Lab2_B11107122_凃岳霖/src/train.py --model res_unet --epochs 200 --early_stop_patience 20 | tee train_res_unet.log
+
+python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model res_unet --auto_threshold | tee eval_res_unet.log
+
+python DL_Lab2_B11107122_凃岳霖/src/inference.py --model res_unet --threshold 0.45 --tta | tee infer_res_unet.log
+
+python test/kaggle_test.py --model res_unet --tta | tee kaggle_res_unet.log
 ```

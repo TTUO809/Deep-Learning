@@ -1,6 +1,7 @@
 # 排除深度學習相關大檔
 *.pth
 *.log
+!Lab_2/Log_best/*.log
 Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/
 Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/
 

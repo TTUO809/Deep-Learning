@@ -1,0 +1,19 @@
+=============== Start Inference with 【 res_unet 】 ===============
+Args:
+ - Batch Size: 16
+ - TTA: True
+ - Threshold: 0.45
+
+Directory:
+ - Model: ./DL_Lab2_B11107122_凃岳霖/saved_models/res_unet_best.pth
+ - Output CSV: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/submission
+============================================================
+Using device: cuda
+Loading Test Data...(Batch size: 16) 
+[From /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/test_res_unet.txt]
+Loading model weights from: ./DL_Lab2_B11107122_凃岳霖/saved_models/res_unet_best.pth
+============================================================
+
+============================================================
+Inference completed! Kaggle submission file saved to: /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/submission/submission_res_unet_th45_tta.csv
+============================================================

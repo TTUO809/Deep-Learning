@@ -81,7 +81,7 @@ def evaluate(eval_args):
 
     print(f"=============== Start Evaluate with 【 {selected_model} 】 ===============")
     print(f"Args:\n - Batch Size: {eval_args.batch_size}\n - Threshold: {eval_args.threshold}")
-    print(f"Directory:\n - Model: {model_path}")
+    print(f"\nDirectory:\n - Model: {model_path}")
     print("="*60)
 
     # 設置設備 (GPU 或 CPU)。
@@ -119,7 +119,7 @@ def evaluate(eval_args):
 
     avg_dice_map = evaluate_with_thresholds(model, val_loader, device, selected_model, thresholds)
 
-    print("\n" + "="*60)
+    print("="*60)
     if eval_args.auto_threshold:
         best_threshold, best_dice = max(avg_dice_map.items(), key=lambda x: x[1])
         print("Threshold Scan Results:")

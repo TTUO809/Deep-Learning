@@ -41,8 +41,8 @@ def inference(infer_args):
     selected_model, model_path = resolve_model_config(infer_args)
 
     print(f"=============== Start Inference with 【 {selected_model} 】 ===============")
-    print(f"Args:\n - Batch Size: {infer_args.batch_size}\n - TTA: {infer_args.tta}")
-    print(f"Directory:\n - Model: {model_path}\n - Output CSV: {infer_args.output_csv_dir}")
+    print(f"Args:\n - Batch Size: {infer_args.batch_size}\n - TTA: {infer_args.tta}\n - Threshold: {infer_args.threshold}")
+    print(f"\nDirectory:\n - Model: {model_path}\n - Output CSV: {infer_args.output_csv_dir}")
     print("="*60)
     
     # 設置設備 (GPU 或 CPU)。
@@ -127,7 +127,7 @@ def inference(infer_args):
     os.makedirs(infer_args.output_csv_dir, exist_ok=True)  # 確保輸出目錄存在。
     tta_suffix = "_tta" if infer_args.tta else ""
     thresh_suffix = f"_th{int(infer_args.threshold*100)}" if infer_args.threshold != 0.5 else ""
-    output_csv = os.path.join(infer_args.output_csv_dir, f'submission_{selected_model}{tta_suffix}{thresh_suffix}.csv')
+    output_csv = os.path.join(infer_args.output_csv_dir, f'submission_{selected_model}{thresh_suffix}{tta_suffix}.csv')
     
     df = pd.DataFrame(results)
     df.to_csv(output_csv, index=False)

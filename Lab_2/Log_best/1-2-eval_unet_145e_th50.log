@@ -1,0 +1,30 @@
+=============== Start Evaluate with 【 unet 】 ===============
+Args:
+ - Batch Size: 16
+ - Threshold: 0.5
+
+Directory:
+ - Model: ./DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+============================================================
+Using device: cuda
+Loading Validation Data...(Batch size: 16) 
+[From /home/c_1006/DL/Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/val.txt]
+Loading model weights from: ./DL_Lab2_B11107122_凃岳霖/saved_models/unet_best.pth
+============================================================
+Auto threshold scan: start=0.3, end=0.7, step=0.05
+Scanning 9 thresholds: [0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7]
+============================================================
+Threshold Scan Results:
+ - threshold=0.3000: dice=0.9059
+ - threshold=0.3500: dice=0.9068
+ - threshold=0.4000: dice=0.9075
+ - threshold=0.4500: dice=0.9079
+ - threshold=0.5000: dice=0.9080
+ - threshold=0.5500: dice=0.9080
+ - threshold=0.6000: dice=0.9077
+ - threshold=0.6500: dice=0.9071
+ - threshold=0.7000: dice=0.9062
+============================================================
+Best Threshold: 0.5000
+Best Val Dice Score: 0.9080
+============================================================
