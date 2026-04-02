@@ -172,6 +172,18 @@ class OxfordPetDataset(Dataset):
 
         return image, mask
 
+def _worker_init_fn(worker_id):
+    '''
+    Args:
+        worker_id (int): DataLoader 中子進程的 ID。
+    Description:
+        為了確保在使用多進程 DataLoader 時，每個子進程的隨機性都是可重現的，這個函數會根據全域種子和 worker_id 來設置每個子進程的獨立 RNG 種子。
+        這樣可以確保在不同的運行中，即使使用多進程載入數據，數據增強的隨機行為也是一致的，從而提高實驗的可重現性。
+    '''
+
+    worker_seed = torch.initial_seed() % (2 ** 32)  # 獲取全域種子並確保它在 32 位整數範圍內，這是因為某些 RNG 實現可能要求種子必須是 32 位的。
+    set_seed(worker_seed, deterministic=False)
+
 def get_oxford_pet_dataloader(root_dir, split='train', batch_size=16, num_workers=4, image_size=388, verbose=False):
     '''
     Args:
@@ -184,17 +196,23 @@ def get_oxford_pet_dataloader(root_dir, split='train', batch_size=16, num_worker
     Returns:
         (DataLoader): 包含指定資料分割的 DataLoader，已經套用必要的前處理轉換。
     Description:
-        負責創建 Oxford Pet Dataset 的 DataLoader。
-        隨機性由外部程式入口統一呼叫 set_seed() 管理，這裡不重設全域 RNG。
+        這個函數負責創建並返回一個 DataLoader，該 DataLoader 使用 OxfordPetDataset 來讀取指定分割的數據，並根據提供的參數進行批次大小、子進程數量和圖像大小的配置。
     '''
     
     dataset = OxfordPetDataset(root_dir=root_dir, split=split, image_size=image_size, verbose=verbose)
     
+    # 建立獨立的 Generator，與全域 RNG 隔離，確保 shuffle 順序不受 augmentation 的 RNG 消耗影響。
+    # torch.initial_seed() 讀取由 set_seed() 設定的種子，不需要額外傳入 seed 參數。
+    g = torch.Generator()
+    g.manual_seed(torch.initial_seed() % (2 ** 32))
+
     dataloader = DataLoader(
         dataset,
         batch_size=batch_size,
         shuffle=(split == 'train'),
         num_workers=num_workers,
+        worker_init_fn=_worker_init_fn,
+        generator=g,
     )
 
     return dataloader
@@ -228,7 +246,7 @@ if __name__ == "__main__":
     print(f"Mask value range: [{mask.min()}, {mask.max()}]")
 
     print(f"\n--- [DataLoader batch test] ---")
-    batch_size = 4
+    batch_size = 2
     
     # 根據系統資源檢測並建議 DataLoader 的 num_workers 設定，提供詳細的系統資訊和建議，以幫助使用者選擇合適的 num_workers 值。
     worker_info = detect_optimal_num_workers(batch_size=batch_size)
@@ -238,8 +256,8 @@ if __name__ == "__main__":
     print(f"  Safe range: {worker_info['safe_range'][0]} ~ {worker_info['safe_range'][1]}")
     print(f"  Advice: {worker_info['advice']}")
     
-    # 為了確保在測試過程中數據載入的穩定性和可重現性，特別是在多進程 DataLoader 中，這裡暫時使用 num_workers=0（即在主進程中載入數據），以避免多進程帶來的隨機性和潛在的資源競爭問題。
-    num_workers = 0
+    # 為了確保測試的穩定性，這裡直接使用推薦的 num_workers 值，並在輸出中明確指出這一點。
+    num_workers = worker_info['recommended']
     print(f"\nUsing num_workers={num_workers} for stable testing.")
 
     print("\nLoading Kaggle train split (train) ...")
