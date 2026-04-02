@@ -3,7 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ChannelAttention(nn.Module):
+    '''
+    通道注意力機制，根據每個通道的重要性對特徵圖進行加權。
+    '''
     def __init__(self, in_planes, ratio=16):
+        '''
+        Args:
+            in_planes (int): 輸入通道數。
+            ratio (int): 壓縮比例，默認為 16。
+        '''
         super(ChannelAttention, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)
@@ -16,19 +24,38 @@ class ChannelAttention(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
+        '''
+        Args:
+            x (torch.Tensor): 輸入特徵圖，形狀為 (N, in_planes, H, W)。
+        Returns:
+            (torch.Tensor): 經過通道注意力機制加權後的特徵圖，形狀為 (N, in_planes, H, W)。
+        '''
         avg_out = self.fc(self.avg_pool(x))
         max_out = self.fc(self.max_pool(x))
         out = avg_out + max_out
         return self.sigmoid(out)
 
 class SpatialAttention(nn.Module):
+    '''
+    空間注意力機制，根據每個空間位置的重要性對特徵圖進行加權。
+    '''
     def __init__(self, kernel_size=7):
+        '''
+        Args:
+            kernel_size (int): 卷積核大小，默認為 7。
+        '''
         super(SpatialAttention, self).__init__()
         padding = 3 if kernel_size == 7 else 1
         self.conv1 = nn.Conv2d(2, 1, kernel_size, padding=padding, bias=False)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
+        '''
+        Args:
+            x (torch.Tensor): 輸入特徵圖，形狀為 (N, C, H, W)。
+        Returns:
+            (torch.Tensor): 經過空間注意力機制加權後的特徵圖，形狀為 (N, 1, H, W)。
+        '''
         avg_out = torch.mean(x, dim=1, keepdim=True)
         max_out, _ = torch.max(x, dim=1, keepdim=True)
         x_cat = torch.cat([avg_out, max_out], dim=1)
@@ -36,12 +63,27 @@ class SpatialAttention(nn.Module):
         return self.sigmoid(out)
 
 class CBAM(nn.Module):
+    '''
+    結合通道注意力和空間注意力的 CBAM 模塊。
+    '''
     def __init__(self, in_planes, ratio=16, kernel_size=7):
+        '''
+        Args:
+            in_planes (int): 輸入通道數。
+            ratio (int): 通道注意力的壓縮比例，默認為 16。
+            kernel_size (int): 空間注意力的卷積核大小，默認為 7。
+        '''
         super(CBAM, self).__init__()
         self.ca = ChannelAttention(in_planes, ratio)
         self.sa = SpatialAttention(kernel_size)
 
     def forward(self, x):
+        '''
+        Args:
+            x (torch.Tensor): 輸入特徵圖，形狀為 (N, in_planes, H, W)。
+        Returns:
+            (torch.Tensor): 經過 CBAM 模塊加權後的特徵圖，形狀為 (N, in_planes, H, W)。
+        '''
         x = self.ca(x) * x  
         x = self.sa(x) * x  
         return x
@@ -196,6 +238,9 @@ class ResNet34UNet(nn.Module):
         self._initialize_weights()
 
     def _initialize_weights(self):
+        '''
+        使用 Kaiming He 初始化方法來初始化卷積層的權重，並且將偏置初始化為 0。
+        '''
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')

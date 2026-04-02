@@ -1,3 +1,5 @@
+# Python version requirement: >=3.9
+
 # Deep Learning Core
 
 torch>=2.0.0

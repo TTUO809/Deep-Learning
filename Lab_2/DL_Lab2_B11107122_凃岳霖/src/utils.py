@@ -1,7 +1,74 @@
 import os
+import random
+import multiprocessing
+import numpy as np
 
 import torch
 import torch.nn as nn
+
+def set_seed(seed=42, deterministic=True):
+    '''
+    設定所有隨機數生成器的種子，確保實驗的完全可重現性。
+    
+    這個函數設定以下的隨機種子：
+    - Python 內建 random 模組
+    - NumPy 的隨機數生成器
+    - PyTorch 在 CPU 上的隨機數生成器
+    - PyTorch 在 GPU 上的隨機數生成器（包括多 GPU）
+    - cuDNN 後端（禁用自動調整，使用確定性算法）
+    
+    Args:
+        seed (int): 隨機種子值，默認為 42。
+        deterministic (bool): 是否啟用 PyTorch 確定性算法與 cuDNN 設定。
+    '''
+    random.seed(seed)       # Python 內建 random 模組可重現。如: 
+    np.random.seed(seed)    # NumPy 可重現。
+    torch.manual_seed(seed) # PyTorch 在 CPU 上可重現。
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)     # PyTorch 在單個 GPU 上可重現。
+        torch.cuda.manual_seed_all(seed) # PyTorch 在多個 GPU 上可重現。
+
+    if deterministic:
+        torch.backends.cudnn.deterministic = True   # 確保 cuDNN 使用確定性算法。
+        torch.backends.cudnn.benchmark = False      # 禁用 cuDNN 的自動調整功能，確保每次運行都使用相同的算法。
+        torch.use_deterministic_algorithms(True, warn_only=True)  # 強制所有 PyTorch 操作使用確定性算法。
+
+def detect_optimal_num_workers(batch_size=16):
+    '''
+    Detect the optimal number of workers for DataLoader based on system resources.
+    
+    Args:
+        batch_size (int): The batch size used in DataLoader (optional, for reference).
+    
+    Returns:
+        dict: Contains "cpu_count", "recommended", and "safe_range".
+    
+    Guideline:
+        - num_workers should NOT exceed CPU count
+        - Too many workers cause memory overhead and process management costs
+        - Typical rule: num_workers = min(batch_size * 2, cpu_count)
+        - Start conservatively (2-4) and increase if data loading is the bottleneck
+        - Monitor GPU utilization: if GPU is idle, increase num_workers
+    '''
+    cpu_count = multiprocessing.cpu_count()
+    
+    # Common heuristic: num_workers = min(batch_size * 2, cpu_count)
+    recommended = min(batch_size * 2, cpu_count)
+    
+    # Clip to reasonable range
+    recommended = max(0, min(recommended, cpu_count))
+    
+    # Safe range: [0, cpu_count], where 0 = main process only
+    safe_range = (0, cpu_count)
+    
+    result = {
+        'cpu_count': cpu_count,
+        'recommended': recommended,
+        'safe_range': safe_range,
+        'advice': f"Start with num_workers={recommended} (based on batch_size={batch_size} and {cpu_count} CPUs). Increase if data loading is the bottleneck."
+    }
+    
+    return result
 
 def resolve_model_config(args):
     '''
@@ -59,7 +126,6 @@ def cal_dice_score(predict_logits, GT_masks, threshold=0.5, smooth=1e-6, use_pre
     else:
         return dice_score.mean()        # 返回 Soft Dice Score 的平均值，保留梯度信息。
 
-
 class FocalLoss(nn.Module):
     '''
     用於處理正負樣本極度不平衡問題。
@@ -98,12 +164,18 @@ class FocalLoss(nn.Module):
             return focal_loss.sum()
         return focal_loss
 
-
 class FocalDiceLoss(nn.Module):
     '''
     Focal Loss + Dice Loss 的組合損失函數。
     '''
     def __init__(self, focal_weight=0.5, dice_weight=0.5, alpha=0.5, gamma=2.0):
+        '''
+        Args:
+            focal_weight (float): Focal Loss 的權重，默認為 0.5。
+            dice_weight (float): Dice Loss 的權重，默認為 0.5。
+            alpha (float): Focal Loss 中正樣本的權重，默認為 0.5。
+            gamma (float): Focal Loss 中調整難易樣本的參數，默認為 2.0。
+        '''
         super(FocalDiceLoss, self).__init__()
         self.focal = FocalLoss(alpha=alpha, gamma=gamma)
         self.focal_weight = focal_weight
@@ -127,6 +199,11 @@ class BCEDiceLoss(nn.Module):
     BCE + Dice Loss 的組合損失函數。
     '''
     def __init__(self, bce_weight=0.5, dice_weight=0.5):
+        '''
+        Args:
+            bce_weight (float): BCE Loss 的權重，默認為 0.5。
+            dice_weight (float): Dice Loss 的權重，默認為 0.5。
+        '''
         super(BCEDiceLoss, self).__init__()
         self.bce = nn.BCEWithLogitsLoss()
         self.bce_weight = bce_weight

@@ -1,30 +1,54 @@
+AI Usage & Academic Honesty
+
+本作業使用 GitHub Copilot 與 Gemini 協助除錯、理解論文與整理想法，模型設計、訓練實作、調參與分析皆由本人獨立完成。
+
 1. Implementation Highlights:
 
-    - 
+(a) UNet：依論文使用無填充卷積，輸入 572×572 經網路輸出 388×388，因此推論時加 reflection padding 補回邊界資訊。
 
-
+(b) ResNet34_UNet：針對對接問題進行修正。原先 Decoder 1 設定為 32+512，與 skip connection 的 256 不一致，因此我重新梳理對接流程，讓 Decoder Block 配置正確。
 
 2. Data Preprocessing strategy:
 
-    - 
-
-
-
+- 標註二值化：前景(1)->1，背景與邊界(2,3)->0。
+- 資料增強，同步用在 image 與 mask：
+    - 50% 機率 HFlip、VFlip
+    - RandomAffine：旋轉 [-15, 15]、平移 10%、縮放 [0.9, 1.1]
+        - image 用雙線性插值保持平滑、mask 用最近鄰插值避免產生非整數類別值，確保標籤的正確性。
+    - 50% 機率 ColorJitter（brightness/contrast/saturation=0.2, hue=0.05）【僅 image】
+- 尺寸統一：皆 resize 到 388x388（兼顧硬體限制與 UNet 架構需求）。
+- 轉 tensor 後：
+    - image 使用 ImageNet 正規化（mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225]）。
+    - mask 再次二值化，確保仍是乾淨的 0/1 標籤。
+- 驗證/測試流程：不啟用隨機增強，只做 resize、tensor 轉換與 normalize，以穩定評估模型表現。
 
 3. Training Strategy:
 
+採分階段控制：
 
+(1) 起始穩定期（Epoch 1~5）：使用 LinearLR warmup 讓 learning rate 平滑上升，降低 train from scratch 初期震盪。
 
+(2) 主要收斂期（Warmup 後）：使用 AdamW + CosineAnnealingLR（以 SequentialLR 串接），先探索再穩定收斂。
 
+(3) 損失函數（處理類別不平衡）：預設使用 FocalDiceLoss（可切換 BCEDiceLoss），Focal 強化難分像素、Dice 優化區域重疊，權重各 0.5，對寵物邊界與小區塊預測更有效。
+
+(4) 數值穩定機制：啟用 AMP（autocast + GradScaler）並加入 gradient clipping（max_norm=1.0），降低記憶體壓力與梯度爆衝風險。
+
+(5) 收尾決策（防過擬合）：以 validation dice 監控，分數創新高即儲存 best model。連續多個 epoch 無提升則 early stopping。
 
 4. Key Observations:
 
-
-
-
+- 純 Adam 前期震盪大、後期易平台、純 ReduceLROnPlateau 反應偏慢。改為 Warmup + Cosine 後，loss 更穩，低學習率階段更容易二次突破。
+- BCE+Dice 可收斂，但邊界較保守。改成 Focal+Dice 後，邊界與薄區域預測更穩。
+- 因訓練時間長而加入 AMP，單 epoch 變快、顯存壓力降低；搭配 gradient clipping，數值穩定性也更好。
+- evaluate 掃 threshold 可在訓練後再擠分。
+- inference 用 TTA 可降噪並提升提交穩定性。
 
 5. Comparison between UNet and ResNet34_UNet:
 
+最佳 Dice： UNet 0.914，ResNet34_UNet 0.929，後者表現較佳。
 
-
-
+差異重點：
+- 架構：UNet 簡潔、收斂快；ResNet34_UNet（Residual + CBAM）在多尺度與邊界表達更強，上限較高。
+- 時間：雖然 UNet 較早 early stop，但單 epoch 較慢（約 2:36），總時長反而較長；ResNet34_UNet 單 epoch 約 0:49，整體更快。
+- 原因：UNet 訓練前需 padding（實際輸入 572×572）且高解析度計算較重；ResNet34_UNet 在本實作 decoder 通道較小、吞吐量較好。

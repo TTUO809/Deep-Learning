@@ -7,7 +7,7 @@ from tqdm import tqdm
 from oxford_pet import get_oxford_pet_dataloader
 from models.unet import UNet
 from models.resnet34_unet import ResNet34UNet
-from utils import cal_dice_score, resolve_model_config
+from utils import set_seed, cal_dice_score, resolve_model_config
 
 def build_thresholds(start, end, step):
     '''
@@ -77,10 +77,13 @@ def evaluate(eval_args):
     Args:
         eval_args (argparse.Namespace): 包含所有評估參數。
     '''
+    # 設定 seed 以確保可重現的評估結果
+    set_seed(eval_args.seed)
+    
     selected_model, model_path = resolve_model_config(eval_args)
 
     print(f"=============== Start Evaluate with 【 {selected_model} 】 ===============")
-    print(f"Args:\n - Batch Size: {eval_args.batch_size}\n - Threshold: {eval_args.threshold}")
+    print(f"Args:\n - Batch Size: {eval_args.batch_size}\n - Threshold: {eval_args.threshold}\n - Seed: {eval_args.seed}")
     print(f"\nDirectory:\n - Model: {model_path}")
     print("="*60)
 
@@ -90,7 +93,8 @@ def evaluate(eval_args):
 
     # 獲取 DataLoader。
     print(f"Loading Validation Data...(Batch size: {eval_args.batch_size}) \n[From {os.path.join(eval_args.data_dir, 'val.txt')}]")
-    val_loader   = get_oxford_pet_dataloader(root_dir=eval_args.data_dir, split='val'  , batch_size=eval_args.batch_size)
+    # 使用 num_workers=0 確保評估時的完全可重現性（避免多進程的不確定性）
+    val_loader   = get_oxford_pet_dataloader(root_dir=eval_args.data_dir, split='val'  , batch_size=eval_args.batch_size, num_workers=0)
 
     # 初始化模型並移動到 device。
     if selected_model == 'unet':
@@ -148,8 +152,10 @@ if __name__ == "__main__":
 
     parser.add_argument('--model', type=str, default='unet', choices=['unet', 'res_unet'], help='Model name for evaluation (default: unet)')
     
+    random_seed_default = 42
     batch_size_default = 16
     threshold_default = 0.5
+    parser.add_argument('--seed', type=int, default=random_seed_default, help=f'Random seed for reproducibility (default: {random_seed_default})')
     parser.add_argument('--batch_size', type=int, default=batch_size_default, help=f'Batch size for evaluation (default: {batch_size_default})')
     parser.add_argument('--threshold', type=float, default=threshold_default, help=f'Threshold for converting probabilities to binary masks (default: {threshold_default})')
     parser.add_argument('--auto_threshold', action='store_true', help='Auto scan thresholds and report the best one on val set')

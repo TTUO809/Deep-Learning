@@ -30,7 +30,7 @@ def download_and_extract(url, extract_to):
                 zip_ref.extractall(extract_to)
         elif file_name.endswith('.tar.gz'):
             with tarfile.open(file_path, 'r:gz') as tar_ref:
-                tar_ref.extractall(extract_to, filter='data')
+                tar_ref.extractall(extract_to)
         else:
             print(f"Unsupported file format for 【{file_name}】. Skipping extraction.")
             return
@@ -54,8 +54,8 @@ def setup_dataset():
     # Oxford-IIIT Pet Dataset 的下載連結。
     print(f"=== Downloading Oxford-IIIT Pet Dataset... ===")
     official_urls = [
-        "https://thor.robots.ox.ac.uk/datasets/pets/images.tar.gz",
-        "https://thor.robots.ox.ac.uk/datasets/pets/annotations.tar.gz"
+        "https://www.robots.ox.ac.uk/~vgg/data/pets/data/images.tar.gz",
+        "https://www.robots.ox.ac.uk/~vgg/data/pets/data/annotations.tar.gz"
     ]
     for url in official_urls:
         download_and_extract(url, PET_DIR)

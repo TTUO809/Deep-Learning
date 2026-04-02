@@ -1,6 +1,5 @@
 import os
 import argparse
-import random
 import numpy as np
 import torch
 import torch.nn as nn
@@ -19,20 +18,7 @@ from tqdm import tqdm                       # 用於顯示訓練進度條。
 from oxford_pet import get_oxford_pet_dataloader
 from models.unet import UNet
 from models.resnet34_unet import ResNet34UNet
-from utils import cal_dice_score, BCEDiceLoss, FocalDiceLoss
-
-def set_seed(seed=42):
-    '''
-    Args:
-        seed (int): 隨機種子值，用於確保實驗的可重現性。
-    '''
-    random.seed(seed)       # Python 的內建 random 模組可重現。
-    np.random.seed(seed)    # NumPy 可重現 。
-    torch.manual_seed(seed) # PyTorch 在 CPU 上可重現。
-    torch.cuda.manual_seed(seed)    # PyTorch 在 GPU 上可重現。
-    torch.cuda.manual_seed_all(seed) # PyTorch 在多個 GPU 上可重現。
-    torch.backends.cudnn.deterministic = True   # 確保 cuDNN 使用確定性算法。
-    torch.backends.cudnn.benchmark = False      # 禁用 cuDNN 的自動調整功能，確保每次運行都使用相同的算法。
+from utils import set_seed, cal_dice_score, BCEDiceLoss, FocalDiceLoss
 
 def train(train_args):
     '''
@@ -236,8 +222,8 @@ def train(train_args):
 
 
 if __name__ == "__main__":
-    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-    PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))    # src/
+    PROJECT_ROOT = os.path.dirname(CURRENT_DIR)                 # DL_Lab2_B11107122_凃岳霖/
 
     # 定義命令行參數。
     parser = argparse.ArgumentParser(description="Train on Oxford-IIIT Pet Dataset")
@@ -251,11 +237,14 @@ if __name__ == "__main__":
     
     parser.add_argument('--resume', type=str, default=None, help='Path to a checkpoint to resume training from (default: None)')
 
-    batch_size_default = 16
+    random_seed_default = 42
+    parser.add_argument('--seed', type=int, default=random_seed_default, help=f'Random seed for reproducibility (default: {random_seed_default})')
+
     epochs_default = 20
+    batch_size_default = 16
+
     learning_rate_default = 5e-4
     weight_decay_default = 1e-4
-    random_seed_default = 42
     bce_weight_default = 0.5
     focal_weight_default = 0.5
     dice_weight_default = 0.5
@@ -268,12 +257,12 @@ if __name__ == "__main__":
     focal_alpha_default = 0.5
     focal_gamma_default = 2.0
     warmup_epochs_default = 5
-    
-    parser.add_argument('--batch_size', type=int, default=batch_size_default, help=f'Batch size for training (default: {batch_size_default})')
+
     parser.add_argument('--epochs', type=int, default=epochs_default, help=f'Number of training epochs (default: {epochs_default})')
+    parser.add_argument('--batch_size', type=int, default=batch_size_default, help=f'Batch size for training (default: {batch_size_default})')
+    
     parser.add_argument('--learning_rate', type=float, default=learning_rate_default, help=f'Learning rate for optimizer (default: {learning_rate_default})')
     parser.add_argument('--weight_decay', type=float, default=weight_decay_default, help=f'Weight decay for optimizer (default: {weight_decay_default})')
-    parser.add_argument('--seed', type=int, default=random_seed_default, help=f'Random seed for reproducibility (default: {random_seed_default})')
     parser.add_argument('--bce_weight', type=float, default=bce_weight_default, help=f'Weight for BCE loss (default: {bce_weight_default})')
     parser.add_argument('--focal_weight', type=float, default=focal_weight_default, help=f'Weight for Focal loss (default: {focal_weight_default})')
     parser.add_argument('--dice_weight', type=float, default=dice_weight_default, help=f'Weight for Dice loss (default: {dice_weight_default})')

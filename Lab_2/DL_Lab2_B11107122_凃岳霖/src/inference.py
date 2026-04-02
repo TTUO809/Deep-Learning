@@ -10,7 +10,7 @@ from PIL import Image
 from oxford_pet import get_oxford_pet_dataloader
 from models.unet import UNet
 from models.resnet34_unet import ResNet34UNet
-from utils import resolve_model_config
+from utils import set_seed, resolve_model_config
 
 def rle_encode(mask):
     '''
@@ -37,11 +37,13 @@ def inference(infer_args):
     Args:
         infer_args (argparse.Namespace): 包含所有推理參數。
     '''
+    # 設定 seed 以確保可重現的推理結果
+    set_seed(infer_args.seed)
 
     selected_model, model_path = resolve_model_config(infer_args)
 
     print(f"=============== Start Inference with 【 {selected_model} 】 ===============")
-    print(f"Args:\n - Batch Size: {infer_args.batch_size}\n - TTA: {infer_args.tta}\n - Threshold: {infer_args.threshold}")
+    print(f"Args:\n - Batch Size: {infer_args.batch_size}\n - TTA: {infer_args.tta}\n - Threshold: {infer_args.threshold}\n - Seed: {infer_args.seed}")
     print(f"\nDirectory:\n - Model: {model_path}\n - Output CSV: {infer_args.output_csv_dir}")
     print("="*60)
     
@@ -51,7 +53,8 @@ def inference(infer_args):
 
     # 獲取 DataLoader。
     print(f"Loading Test Data...(Batch size: {infer_args.batch_size}) \n[From {os.path.join(infer_args.data_dir, f'test_{selected_model}.txt')}]")
-    test_loader  = get_oxford_pet_dataloader(root_dir=infer_args.data_dir, split=f'test_{selected_model}', batch_size=infer_args.batch_size)
+    # 使用 num_workers=0 確保推理時的完全可重現性（避免多進程的不確定性）
+    test_loader  = get_oxford_pet_dataloader(root_dir=infer_args.data_dir, split=f'test_{selected_model}', batch_size=infer_args.batch_size, num_workers=0)
     all_image_names = test_loader.dataset.image_names   # 獲取測試集的所有圖像名稱列表，For image_id。
     image_idx = 0                                       # 追蹤當前處理的圖像。
 
@@ -78,9 +81,10 @@ def inference(infer_args):
     # 定義一個內部函數來處理 UNet 的前向傳播，因為 UNet 的輸出圖像大小與輸入圖像大小不匹配，需要進行特殊處理。
     def _forward_unet(images):
         if selected_model == 'unet':
-            imgs_padded = F.pad(images, (94, 94, 94, 94), mode='reflect') # UNet 的輸出圖像比輸入圖像小 94 像素（每邊），因此需要對輸入圖像進行反射填充以補償這個尺寸差異。
-            outputs = model(imgs_padded)
-            return outputs[:, :, 2:-2, 2:-2]  # 將 UNet 的輸出圖像裁剪回與原始輸入圖像相同的大小。
+            pad = 92
+            images = F.pad(images, (pad, pad, pad, pad), mode='reflect')
+            outputs = model(images)
+            return outputs  # 使用與 train/evaluate 一致的 92-padding，輸出直接對齊 388x388 mask。
         else:
             return model(images)
 
@@ -152,8 +156,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--model', type=str, default='unet', choices=['unet', 'res_unet'], help='Model name for inference (default: unet)')
     
+    random_seed_default = 42
     batch_size_default = 16
     threshold_default = 0.5
+    parser.add_argument('--seed', type=int, default=random_seed_default, help=f'Random seed for reproducibility (default: {random_seed_default})')
     parser.add_argument('--batch_size', type=int, default=batch_size_default, help=f'Batch size for inference (default: {batch_size_default})')     
     parser.add_argument('--threshold', type=float, default=threshold_default, help=f'Threshold for converting probabilities to binary masks (default: {threshold_default})')
     

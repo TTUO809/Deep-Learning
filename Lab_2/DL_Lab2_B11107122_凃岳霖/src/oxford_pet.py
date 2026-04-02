@@ -5,88 +5,86 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
-import random
-
+from utils import set_seed, detect_optimal_num_workers
 
 class OxfordPetDataset(Dataset):
-    # 初始化用。負責讀取資料、切分資料集、建立 Image 和 Mask 的 Paths 列表。
-    def __init__(self, root_dir, split='train', val_ratio=0.2, random_seed=42, verbose=False):
+
+    def __init__(self, root_dir, split='train', val_ratio=0.2, random_seed=42, image_size=388, verbose=False):
         '''
         Args:
             root_dir (str)   : Image 和 Mask 所在的資料夾根目錄路徑。
             split (str)      : 決定要使用 【'train' 或 'val' 或 'test'】 的資料分割 (預設為 'train')。
-            transform        : Image 和 Mask 的前處理函數 (預設不更改任何轉換與加工)。
             val_ratio (float): Validation Set 佔 Dataset 的比例 (預設為 0.2 也就是 train:val = 8:2)。
             random_seed (int): 可重現的結果用 (預設為 42)。
+            image_size (int or tuple): 圖片調整的大小 (預設調整為 (388, 388))。
+            verbose (bool)   : 是否啟用詳細的 debug 輸出 (預設為 False)。
+        Description:
+            負責讀取 Oxford Pet Dataset 中的圖片和遮罩，並根據 Kaggle 提供的資料分割進行初始化。如果不存在，則根據 trainval.txt 進行動態切分。
+            提供必要的前處理和數據增強，並確保在多進程 DataLoader 中的隨機性可重現。
         '''
 
         self.root_dir = root_dir
         self.split = split
         self.verbose = verbose
+        self.image_size = image_size if isinstance(image_size, tuple) else (image_size, image_size) # 確保 image_size 是 tuple 格式 (H, W)。
         
         image_dir = os.path.join(root_dir, 'images')
         mask_dir = os.path.join(root_dir, 'annotations', 'trimaps')
 
-        # 優先讀取 Kaggle 提供的明確切分名單 (train.txt, val.txt, test_unet.txt)。
+        # 優先讀取 Kaggle 提供的明確切分名單 (train.txt, val.txt, test_unet.txt, test_res_unet.txt)。
         list_file = os.path.join(root_dir, 'annotations', f'{split}.txt')
 
-        # 讀取檔案 與 遇意外時的自動切分邏輯。
         if os.path.exists(list_file):
             # 如果 Kaggle 給的指定清單存在，直接使用。
-            if self.verbose:
-                print(f"[Verbose/init] 正在讀取清單檔案: {list_file}")
+            print(f"[Init] Reading split list file: {list_file}")
 
             with open(list_file, 'r') as f:
                 lines = f.readlines()
-                # 忽略空行和註解行，提取第一個欄位作為 Image Name。
-                self.image_names = [line.strip().split()[0] for line in lines if line.strip() and not line.startswith('#')]
+                self.image_names = [line.strip().split()[0] for line in lines if line.strip() and not line.startswith('#')] # 忽略空行和註解行，提取第一個欄位作為 Image Name。
         else:
             # 如果指定的清單檔案不存在，則回退到自動切分。
             if split in ['train', 'val']:
                 trainval_file = os.path.join(root_dir, 'annotations', 'trainval.txt')
                 if not os.path.exists(trainval_file):
-                    raise FileNotFoundError(f"找不到 清單檔案: {split}.txt ，且 備用清單檔案: {trainval_file} 也不存在！")
-                
-                if self.verbose:
-                    print(f"[Verbose/init] 找不到 清單檔案: {split}.txt ，改為讀取 備用清單檔案: {trainval_file} 並進行動態切分 (Val Ratio: {val_ratio}, Random Seed: {random_seed})")
+                    raise FileNotFoundError(f"Split file {split}.txt not found, and fallback file also does not exist: {trainval_file}")
+
+                print(f"[Init] Split file {split}.txt not found. Falling back to {trainval_file} with dynamic split (Val Ratio: {val_ratio}, Random Seed: {random_seed})")
 
                 with open(trainval_file, 'r') as f:
                     lines = f.readlines()
                     all_image_names = [line.strip().split()[0] for line in lines if line.strip() and not line.startswith('#')]
 
-                random.seed(random_seed)    # 【確保每次切分、打亂結果一致】。
-                random.shuffle(all_image_names) # 打亂順序。
+                # 統一使用 NumPy 全域 RNG，讓切分行為和 set_seed() 一致。
+                np.random.seed(random_seed)
+                np.random.shuffle(all_image_names)
                 val_size = int(len(all_image_names) * val_ratio) # 全部圖片數量 * Val set 比例，得到 Val set 的圖片數量。
                 if split == 'train':
                     self.image_names = all_image_names[val_size:] # 取 [val_ratio ~ len(all_image_names)-1] 的圖片名稱作為 Train set。
                 else:
                     self.image_names = all_image_names[:val_size] # 取 [0 ~ val_ratio-1]                    的圖片名稱作為 Val set。
             else:
-                # list_file = os.path.join(root_dir, 'annotations', 'test.txt')
-                # 如果所有名單都找不到，則報錯。
-                raise FileNotFoundError(f"找不到 清單檔案: {split}.txt。請確認檔案名稱是否正確，或提供正確的切分清單檔案！")
+                raise FileNotFoundError(f"Split file not found: {split}.txt. Please verify the filename or provide a valid split list file.")
 
-        if self.verbose:
-            print(f"[Verbose/init] {split} 模式: 共載入 {len(self.image_names)} 張圖片名單。")
+        print(f"[Init] {split} mode: loaded {len(self.image_names)} image entries.")
 
         # 最後組合出完整的 Image 和 Mask Paths。
         self.image_paths = [os.path.join(image_dir, name + '.jpg') for name in self.image_names]
         self.mask_paths  = [os.path.join(mask_dir,  name + '.png') for name in self.image_names]
         
-        if self.verbose and len(self.image_paths) > 0:
-            print(f"[Verbose/init] 首張 Image 路徑: {self.image_paths[0]}")
-            print(f"[Verbose/init] 首張 Mask 路徑: {self.mask_paths[0]}")
+        if len(self.image_paths) > 0:
+            print(f"[Init] First image path: {self.image_paths[0]}")
+            print(f"[Init] First mask path: {self.mask_paths[0]}")
 
-    # 回傳總共有多少圖片用。
     def __len__(self):
         '''
         Returns:
             (int): 整個 Dataset 中圖片的總數量。
+        Description:
+            讓 DataLoader 知道整個 Dataset 的大小，從而能夠正確地迭代和分批次讀取數據。
         '''
 
         return len(self.image_names)
 
-    # 取得指定圖片並執行必要【前處理】用。
     def __getitem__(self, idx):
         '''
         Args:
@@ -94,10 +92,12 @@ class OxfordPetDataset(Dataset):
         Returns:
             image (torch.Tensor): 經過前處理後的圖片。
             mask (torch.Tensor): 經過前處理後的遮罩。
+        Description:
+            負責根據給定的索引讀取對應的圖片和遮罩，進行必要的前處理（如數據增強、調整大小、轉換為 Tensor 等），並返回處理後的結果。
         '''
 
         if self.verbose:
-            print(f"\n[Verbose/getitem] 正在讀取 Index: {idx} (圖片名稱: {self.image_names[idx]})")
+            print(f"\n[Verbose/getitem] Reading index: {idx} (image name: {self.image_names[idx]})")
         
         # 讀取 Image。
         image = Image.open(self.image_paths[idx]).convert('RGB')        # 【PIL Object (W, H)-RGB】
@@ -106,85 +106,96 @@ class OxfordPetDataset(Dataset):
         if os.path.exists(self.mask_paths[idx]):
             # 如果有 Mask 的情況下，讀取並轉換成二值遮罩【標籤轉換：1(前景) -> 1(前景), 2(背景)&3(邊界) -> 0(背景)】。
             mask = Image.open(self.mask_paths[idx]).convert('L')        # 【PIL Object (W, H)-L】
-
             mask_np = np.array(mask)                                    # 【-> np.uint8 (H, W)】轉成 NumPy 陣列方便轉換。
             binary_mask = np.where(mask_np == 1, 1, 0).astype(np.uint8) # 【np.uint8 (H, W)】轉成二值遮罩。
             mask = Image.fromarray(binary_mask)                         # 【-> PIL Object (W, H)-L】轉回 PIL Image 格式，方便後續的 transform 處理。 
 
             if self.verbose:
-                print(f"[Verbose/getitem {idx}(1)] 原始的 Mask 像素值內容: {np.unique(mask_np)}")
-                print(f"[Verbose/getitem {idx}(2)] 轉換後 Mask 像素值內容: {np.unique(binary_mask)}")
+                print(f"[Verbose/getitem {idx}(1)] Original mask pixel values: {np.unique(mask_np)}")
+                print(f"[Verbose/getitem {idx}(2)] Converted mask pixel values: {np.unique(binary_mask)}")
 
         else:
-            # 如果沒有 Mask 的情況下，建立一個全黑的遮罩 (PIL Image 的 size 是 (W, H)，而 np.array 是 (H, W, C)，所以要反轉。並確保 Mask 是 8-bit 的黑白圖)。
+            # 如果沒有 Mask 的情況下，建立一個全黑的遮罩。 (PIL Image 的 size 是 (W, H)，而 np.array 是 (H, W, C)，所以要反轉。並確保 Mask 是 8-bit 的黑白圖)
 
             if self.verbose:
-                print(f"[Verbose/getitem {idx}] 找不到 Mask ({self.mask_paths[idx]})，產生全 0 遮罩供推論使用。")
+                print(f"[Verbose/getitem {idx}] Mask not found ({self.mask_paths[idx]}), creating an all-zero mask for inference.")
             
             mask = Image.fromarray(np.zeros((image.size[1], image.size[0]), dtype=np.uint8)) # 【PIL Object (W, H)-L】
 
         if self.verbose:
-            print(f"[Verbose/getitem {idx}(3)] 原始的 Image Size: {image.size} (W, H), Mode: {image.mode}, Value Range: [{np.array(image).min()}, {np.array(image).max()}]")
-            print(f"[Verbose/getitem {idx}(4)] 原始的 Mask Size: {mask.size} (W, H), Mode: {mask.mode}, Value Range: [{np.array(mask).min()}, {np.array(mask).max()}]")
+            print(f"[Verbose/getitem {idx}(3)] Original  image size: {image.size} (W, H), mode: {image.mode}, value range: [{np.array(image).min()}, {np.array(image).max()}]")
+            print(f"[Verbose/getitem {idx}(4)] Converted  mask size: {mask.size} (W, H), mode: {mask.mode},   value range: [{np.array(mask).min()}, {np.array(mask).max()}]")
 
         # 前處理 Image 和 Mask。
         if self.split == 'train':
-            # 1. 隨機水平翻轉 (50% 機率)。
-            if random.random() > 0.5:
+            
+            # 1. 隨機水平翻轉。 (50% 機率)
+            if torch.rand(1).item() > 0.5:
                 image = TF.hflip(image)
                 mask = TF.hflip(mask)
 
-            # 2. 隨機垂直翻轉 (50% 機率)。
-            if random.random() > 0.5:
+            # 2. 隨機垂直翻轉。 (50% 機率)
+            if torch.rand(1).item() > 0.5:
                 image = TF.vflip(image)
                 mask = TF.vflip(mask)
 
-            # 3. 隨機旋轉 (-15度 到 15度)、隨機平移、隨機縮放。
-            affine_params = T.RandomAffine.get_params(
-                degrees=[-15, 15], 
-                translate=[0.1, 0.1], 
-                scale_ranges=[0.9, 1.1], 
-                shears=None, img_size=image.size
-            )
-            image = TF.affine(image, *affine_params, interpolation=TF.InterpolationMode.BILINEAR)
-            mask = TF.affine(mask, *affine_params, interpolation=TF.InterpolationMode.NEAREST)
+            # 3. 隨機仿射增強 (旋轉 ±15度、平移 ±10%、縮放 90%~110%)。 (50% 機率)
+            if torch.rand(1).item() > 0.5:
+                affine_params = T.RandomAffine.get_params(
+                    degrees=[-15, 15], 
+                    translate=[0.1, 0.1], 
+                    scale_ranges=[0.9, 1.1], 
+                    shears=None, img_size=image.size    # sgears=None 表示不進行剪切變換。
+                )
+                # 對 Image 使用雙線性插值，對 Mask 使用最近鄰插值，以保持 Mask 的二值化特性。
+                image = TF.affine(image, *affine_params, interpolation=TF.InterpolationMode.BILINEAR)
+                mask = TF.affine(mask, *affine_params, interpolation=TF.InterpolationMode.NEAREST)
 
-            # 4. 隨機調整 亮度(20%)、對比度(20%)、飽和度(20%)、色調(5%)。
-            if random.random() > 0.5:
+            # 4. 隨機調整 亮度(20%)、對比度(20%)、飽和度(20%)、色調(5%)。 (50% 機率)
+            if torch.rand(1).item() > 0.5:
                 color_jitter = T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.05)
                 image = color_jitter(image)
 
         # 統一調整大小。
-        image_size = (388, 388)
-        image = TF.resize(image, image_size, interpolation=TF.InterpolationMode.BILINEAR)
-        mask = TF.resize(mask, image_size, interpolation=TF.InterpolationMode.NEAREST)
+        image = TF.resize(image, self.image_size, interpolation=TF.InterpolationMode.BILINEAR)
+        mask = TF.resize(mask, self.image_size, interpolation=TF.InterpolationMode.NEAREST)
 
         # 將 Image 轉換為 Tensor 並 Normalize，Mask 轉換為 Tensor。
-        image = TF.to_tensor(image) # 【torch.float32 (C, H, W)，值域 [0.0, 1.0]】
+        image = TF.to_tensor(image) # 【torch.float32 (C, H, W)】。
         image = TF.normalize(image, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]) # 【torch.float32 (C, H, W)，值域經過 Normalize 處理，平均值為 0，標準差為 1，但實際數值會根據原始圖像的顏色分布而有所不同。】
-        mask = TF.to_tensor(mask)   # 【torch.float32 (1, H, W)，值域 [0.0, 1.0]】。
+        mask = TF.to_tensor(mask)   # 【torch.float32 (1, H, W)]】。
         mask = (mask > 0).float()
         
         if self.verbose:
-            print(f"[Verbose/getitem {idx}(5)] Transform 後 Image Shape: {image.shape} (C, H, W), Value Range: [{image.min()}, {image.max()}]")
-            print(f"[Verbose/getitem {idx}(6)] Transform 後 Mask Shape: {mask.shape} (1, H, W), Value Range: [{mask.min()}, {mask.max()}]")
+            print(f"[Verbose/getitem {idx}(5)] Transformed image shape: {image.shape} (C, H, W), value range: [{image.min()}, {image.max()}]")
+            print(f"[Verbose/getitem {idx}(6)] Transformed mask shape: {mask.shape} (1, H, W), value range: [{mask.min()}, {mask.max()}]")
 
         return image, mask
 
-
-def get_oxford_pet_dataloader(root_dir, split='train', batch_size=16, num_workers=4, verbose=False):
+def get_oxford_pet_dataloader(root_dir, split='train', batch_size=16, num_workers=4, image_size=388, verbose=False):
     '''
     Args:
         root_dir (str)   : Image 和 Mask 所在的資料夾根目錄路徑。
         split (str)      : 決定要使用 【'train' 或 'val' 或 'test'】 的資料分割 (預設為 'train')。
         batch_size (int) : 每個 Batch 的圖片數量 (預設為 16)。
         num_workers (int): 用於資料載入的子進程數量 (預設為 4)。
+        image_size (int or tuple): 圖片調整的大小 (預設調整為 (388, 388))。
+        verbose (bool)   : 是否啟用詳細的 debug 輸出 (預設為 False)。
     Returns:
         DataLoader: 包含指定資料分割的 DataLoader，已經套用必要的前處理轉換。
+    Description:
+        負責創建 Oxford Pet Dataset 的 DataLoader。
+        隨機性由外部程式入口統一呼叫 set_seed() 管理，這裡不重設全域 RNG。
     '''
-
-    dataset = OxfordPetDataset(root_dir=root_dir, split=split, verbose=verbose)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=(split == 'train'), num_workers=num_workers)
+    
+    dataset = OxfordPetDataset(root_dir=root_dir, split=split, image_size=image_size, verbose=verbose)
+    
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=(split == 'train'),
+        num_workers=num_workers,
+    )
 
     return dataloader
 
@@ -192,42 +203,71 @@ if __name__ == "__main__":
     CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
     PROJECT_ROOT = os.path.dirname(CURRENT_DIR)
     ROOT_DIR = os.path.join(PROJECT_ROOT, 'dataset', 'oxford-iiit-pet')
+
+    # 為了在 headless 環境（如某些遠程伺服器）中也能正常運行，檢測是否存在 DISPLAY 環境變量，如果不存在【headless 環境（無圖形界面）】則使用 "Agg" 後端來避免圖形界面相關的錯誤。
+    import matplotlib
+    is_headless = not (os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"))
+    if is_headless:
+        matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    print("=== 開始 Verbose 驗證測試 ===")
+    # 直接執行此檔案時，固定一次全域種子。
+    set_seed(42, deterministic=False)
 
-    print(f"--- 【Dataset 首張測試】 ---")
-    dataset = OxfordPetDataset(root_dir=ROOT_DIR, split='train', verbose=True)
+    print("=== Start Oxford Pet Dataset Test ===")
+
+    image_size = 388
+
+    print(f"--- [Dataset first sample test] ---")
+    dataset = OxfordPetDataset(root_dir=ROOT_DIR, split='train', random_seed=42, image_size=image_size, verbose=True)
 
     image, mask = dataset[0]
 
-    print(f"Image 形狀: {image.shape}")
-    print(f"Mask 形狀: {mask.shape}")
-    print(f"Mask 數值範圍: [{mask.min()}, {mask.max()}]")
+    print(f"Image shape: {image.shape}")
+    print(f"Mask shape: {mask.shape}")
+    print(f"Mask value range: [{mask.min()}, {mask.max()}]")
 
-    print(f"\n--- 【DataLoader 批次測試】 ---")
+    print(f"\n--- [DataLoader batch test] ---")
     batch_size = 4
+    
+    # 根據系統資源檢測並建議 DataLoader 的 num_workers 設定，提供詳細的系統資訊和建議，以幫助使用者選擇合適的 num_workers 值。
+    worker_info = detect_optimal_num_workers(batch_size=batch_size)
+    print(f"\n[System Info]")
+    print(f"  CPU Cores: {worker_info['cpu_count']}")
+    print(f"  Recommended num_workers: {worker_info['recommended']}")
+    print(f"  Safe range: {worker_info['safe_range'][0]} ~ {worker_info['safe_range'][1]}")
+    print(f"  Advice: {worker_info['advice']}")
+    
+    # 為了確保在測試過程中數據載入的穩定性和可重現性，特別是在多進程 DataLoader 中，這裡暫時使用 num_workers=0（即在主進程中載入數據），以避免多進程帶來的隨機性和潛在的資源競爭問題。
+    num_workers = 0
+    print(f"\nUsing num_workers={num_workers} for stable testing.")
 
-    print("\n 載入 Kaggle Train Set 測試 ...")
-    train_loader = get_oxford_pet_dataloader(root_dir=ROOT_DIR, batch_size=batch_size, split='train', verbose=True)
+    print("\nLoading Kaggle train split (train) ...")
+    train_loader = get_oxford_pet_dataloader(root_dir=ROOT_DIR, batch_size=batch_size, split='train', num_workers=num_workers, image_size=image_size, verbose=True)
 
-    print("\n 載入 Kaggle Test Set (test_unet) 測試 ...")
-    test_loader = get_oxford_pet_dataloader(root_dir=ROOT_DIR, batch_size=batch_size, split='test_unet', verbose=True)
+    print("\nLoading Kaggle test split (test_unet) ...")
+    test_loader = get_oxford_pet_dataloader(root_dir=ROOT_DIR, batch_size=batch_size, split='test_unet', num_workers=num_workers, image_size=image_size, verbose=True)
 
     try:
-        print("\n從 Train Loader 抓取一組 Batch 進行檢查...")
+        print("\nFetching one batch from train loader for inspection...")
 
-        # 從 Train Loader 抓出一組 Batch，並顯示 Image 和 Mask 的形狀與內容。
+        # 從 Train Loader 抓出一組 Batch。
         images_batch, masks_batch = next(iter(train_loader))
 
-        print(f"\nTrain Batch 影像形狀: {images_batch.shape} (預期: [{batch_size}, 3, 256, 256])")
-        print(f"Train Batch 遮罩形狀: {masks_batch.shape} (預期: [{batch_size}, 1, 256, 256])")
+        print(f"\nTrain batch image shape: {images_batch.shape} (expected: [{batch_size}, 3, {image_size}, {image_size}])")
+        print(f"Train batch mask shape: {masks_batch.shape} (expected: [{batch_size}, 1, {image_size}, {image_size}])")
 
+        # 顯示這個 Batch 的圖片和遮罩，幫助確認前處理和增強是否正常工作。
         plt.figure(figsize=(12, 6))
+        mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
+        std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
         for i in range(batch_size):
+
             # 顯示 Image (分上下兩行，每行 batch_size 個圖，目前在上行)。
             plt.subplot(2, batch_size, i + 1)
-            plt.imshow(images_batch[i].permute(1, 2, 0).numpy()) # 【torch.float32 (C, H, W) -> np.array (H, W, C)】(因為經過 Normalize，顏色會偏掉是正常的)
+            image_np = images_batch[i].permute(1, 2, 0).numpy()
+            image_np = np.clip(image_np * std + mean, 0.0, 1.0) # 反 Normalize 後再顯示，確保圖像看起來正常。
+            plt.imshow(image_np)
             plt.title(f"Train Image {i}")
             plt.axis('off')
 
@@ -238,7 +278,14 @@ if __name__ == "__main__":
             plt.axis('off')
 
         plt.tight_layout()
-        plt.show()
+
+        # 在 headless 環境中，無法使用 plt.show() 顯示圖像，因此將圖像保存到本地文件中，並提供保存路徑的輸出提示。
+        if is_headless:
+            preview_path = os.path.join(PROJECT_ROOT, "debug_batch_preview.png")
+            plt.savefig(preview_path, dpi=150)
+            print(f"Headless environment detected. Saved preview to: {preview_path}")
+        else:
+            plt.show()
 
     except Exception as e:
-        print(f"\nDataLoader 測試失敗。錯誤訊息: {e}")
+        print(f"\nDataLoader test failed. Error: {e}")

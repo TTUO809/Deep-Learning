@@ -4,7 +4,21 @@
 
 ---
 
-## 專案結構
+## Table of Contents
+
+- [Project Structure](#project-structure)
+- [Environment Setup](#environment-setup)
+- [Dataset Setup](#dataset-setup)
+- [Training](#training)
+- [Validation](#validation)
+- [Inference (Generate Kaggle Submission CSV)](#inference-generate-kaggle-submission-csv)
+- [Local Kaggle Evaluation](#local-kaggle-evaluation)
+- [Quick Start Commands](#quick-start-commands)
+- [Technical Details](TECHNICAL.md)
+
+---
+
+## Project Structure
 
 ```
 Lab_2/
@@ -13,8 +27,10 @@ Lab_2/
 │   └── kaggle_test.py                 ← 本地 Kaggle 評估工具
 └── DL_Lab2_B11107122_凃岳霖/
     ├── requirements.txt
-    ├── dataset/                       ← 資料集（執行下載腳本後產生）
-    │   └── oxford-iiit-pet/
+    ├── dataset/
+    │   ├── nycu-2026-spring-dl-lab2-unet.zip
+    │   ├── nycu-2026-spring-dl-lab2-res-net-34-unet.zip
+    │   └── oxford-iiit-pet/           ← 資料集（執行下載腳本後產生）
     │       ├── images/
     │       └── annotations/
     │           └── trimaps/
@@ -23,8 +39,8 @@ Lab_2/
     └── src/
         ├── download_dataset.py        ← 資料集下載與解壓
         ├── train.py                   ← 訓練
-        ├── evaluate.py                ← 驗證集評估 / 自動掃描 threshold
-        ├── inference.py               ← 推理並產生 Kaggle 提交 CSV
+        ├── evaluate.py                ← 驗證集評估
+        ├── inference.py               ← 推理 並 產生 Kaggle 提交 CSV
         ├── oxford_pet.py              ← Dataset / DataLoader
         ├── utils.py                   ← Dice Score、Loss Functions
         └── models/
@@ -34,7 +50,7 @@ Lab_2/
 
 ---
 
-## 環境安裝
+## Environment Setup
 
 > 建議使用 Python 3.9+，並在虛擬環境內安裝。
 
@@ -45,29 +61,16 @@ pip install -r requirements.txt
 
 ---
 
-## 資料集建立
+## Dataset Setup
 
-初始只有 `src/` 與 `requirements.txt`，需要執行以下步驟建立完整資料集。
-
-### Step 1 — 將 Kaggle 提供的 zip 檔放入 dataset
-
-你會自行提供 Kaggle 下載的競賽切分檔，請先把以下兩個 zip 放到 `dataset/` 目錄下：
+本專案已包含 Kaggle 切分 zip，請先確認 `dataset/` 內有以下檔案：
 
 | 檔名 |
 |------|
 | `nycu-2026-spring-dl-lab2-unet.zip` |
-| `binary-semantic-segmentation-res-net-34-u-net.zip` |
+| `nycu-2026-spring-dl-lab2-res-net-34-unet.zip` |
 
-放置後的資料夾結構：
-
-```
-DL_Lab2_B11107122_凃岳霖/
-└── dataset/
-    ├── nycu-2026-spring-dl-lab2-unet.zip
-    └── binary-semantic-segmentation-res-net-34-u-net.zip
-```
-
-### Step 2 — 執行下載腳本
+### Run Download Script
 
 腳本會自動下載官方 Oxford-IIIT Pet 圖片與標注，並把你放在 `dataset/` 內的 Kaggle zip 解壓成 `.txt` 切分名單到 `annotations/`。
 
@@ -89,9 +92,11 @@ oxford-iiit-pet/
     └── test_res_unet.txt
 ```
 
+若上述檔案存在，即可直接進入訓練與評估流程。
+
 ---
 
-## 訓練
+## Training
 
 ```bash
 # 工作目錄：Lab_2/
@@ -99,16 +104,16 @@ oxford-iiit-pet/
 # UNet（預設參數）
 python DL_Lab2_B11107122_凃岳霖/src/train.py --model unet
 
-# ResNet34-UNet
+# ResNet34-UNet（預設參數）
 python DL_Lab2_B11107122_凃岳霖/src/train.py --model res_unet
 
 # 常用參數
 python DL_Lab2_B11107122_凃岳霖/src/train.py \
     --model unet \
-    --epochs 100 \
+    --epochs 200 \
     --batch_size 16 \
     --learning_rate 5e-4 \
-    --early_stop_patience 10 \
+    --early_stop_patience 20 \
     --resume saved_models/unet_best.pth   # 斷點續訓（可選）
 ```
 
@@ -129,15 +134,15 @@ python DL_Lab2_B11107122_凃岳霖/src/train.py \
 
 ---
 
-## 驗證集評估
+## Validation
 
-### 單一 threshold
+### Single Threshold
 
 ```bash
 python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --threshold 0.5
 ```
 
-### 自動掃描最佳 threshold
+### Auto Threshold Scan
 
 加上 `--auto_threshold` 旗標，腳本會在一次前向傳播中掃描指定範圍內的所有 threshold，最後列出每個結果並標出最佳值。
 
@@ -150,13 +155,13 @@ python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
     --threshold_step 0.05
 ```
 
-### 使用自訂模型路徑評估
+### Evaluate with Custom Model Path
 
 若要評估特定的模型權重檔（而非自動組合 `saved_models/{model}_best.pth`），使用 `--model_path`：
 
 ```bash
 python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
-    --model_path ./DL_Lab2_B11107122_凃岳霖/saved_models/20260329/unet_best_145e.pth \
+    --model_path ./DL_Lab2_B11107122_凃岳霖/saved_models/unet_best_145e.pth \
     --auto_threshold
 ```
 
@@ -173,9 +178,9 @@ python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
 
 ---
 
-## 推理（產生 Kaggle 提交 CSV）
+## Inference (Generate Kaggle Submission CSV)
 
-### 基本推理
+### Basic Inference
 
 ```bash
 # 基本推理
@@ -188,13 +193,13 @@ python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta
 python DL_Lab2_B11107122_凃岳霖/src/inference.py --model res_unet --tta --threshold 0.45
 ```
 
-### 使用自訂模型路徑推理
+### Inference with Custom Model Path
 
 使用 `--model_path` 指定特定的模型權重檔：
 
 ```bash
 python DL_Lab2_B11107122_凃岳霖/src/inference.py \
-    --model_path ./DL_Lab2_B11107122_凃岳霖/saved_models/20260329/res_unet_best_168e.pth \
+    --model_path ./DL_Lab2_B11107122_凃岳霖/saved_models/res_unet_best_168e.pth \
     --tta \
     --threshold 0.45
 ```
@@ -216,11 +221,11 @@ submission_{model}[_tta][_th{threshold*100}].csv
 
 ---
 
-## 本地 Kaggle 評估
+## Local Kaggle Evaluation
 
 用來在本地計算與 Kaggle 相同的 Dice Score，驗證提交結果。
 
-### 基本評估
+### Basic Evaluation
 
 ```bash
 # 工作目錄：Lab_2/
@@ -231,11 +236,11 @@ python test/kaggle_test.py --model unet
 # 評估 UNet（TTA）
 python test/kaggle_test.py --model unet --tta
 
-# 評估 ResNet34-UNet
+# 評估 ResNet34-UNet（TTA）
 python test/kaggle_test.py --model res_unet --tta
 ```
 
-### 使用自訂 CSV 路徑評估
+### Evaluate with Custom CSV Path
 
 優先使用明確指定的 CSV 檔案路徑：
 
@@ -255,38 +260,25 @@ python test/kaggle_test.py \
 
 ---
 
-## 完整執行流程總覽
+## Quick Start Commands
 
-### 快速開始
+基於實驗結果的建議執行流程（200 epoch、early stopping patience 20、TTA）。
+
+### Environment Setup (First Time)
 
 ```bash
-# 1. 安裝環境
+# 安裝套件
 pip install -r DL_Lab2_B11107122_凃岳霖/requirements.txt
-
-# 2. 建立資料集（先把 Kaggle zip 放進 dataset/）
-python DL_Lab2_B11107122_凃岳霖/src/download_dataset.py
-
-# 3. 訓練
-python DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 100
-python DL_Lab2_B11107122_凃岳霖/src/train.py --model res_unet --epochs 100
-
-# 4. 找最佳 threshold
-python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --auto_threshold
-
-# 5. 推理
-python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta --threshold 0.45
-
-# 6. 本地評估
-python test/kaggle_test.py --model unet --tta
 ```
 
----
+### Dataset Setup (First Time)
 
-## 實際測試命令
+```bash
+# 建立/補齊資料集
+python DL_Lab2_B11107122_凃岳霖/src/download_dataset.py
+```
 
-基於實驗結果的建議執行流程（200 epoch、early stopping patience 20）。
-
-### UNET 完整流程
+### UNet Full Pipeline
 
 ```bash
 # 訓練（約 7.5 小時）
@@ -302,9 +294,9 @@ python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta | tee inf
 python test/kaggle_test.py --model unet --tta | tee kaggle_unet.log
 ```
 
-**預期結果**：Best Val Dice ~0.908
+**預期結果**：Best Val Dice ~0.9080 | Kaggle Dice ~0.91442
 
-### ResNet34-UNet 完整流程
+### ResNet34-UNet Full Pipeline
 
 ```bash
 # 訓練
@@ -320,25 +312,4 @@ python DL_Lab2_B11107122_凃岳霖/src/inference.py --model res_unet --threshold
 python test/kaggle_test.py --model res_unet --tta | tee kaggle_res_unet.log
 ```
 
-**預期結果**：Best Val Dice ~0.926
-
-### UNET
-```
-python DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 200 --early_stop_patience 20 | tee train_unet.log
-
-python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --auto_threshold | tee eval_unet.log
-
-python DL_Lab2_B11107122_凃岳霖/src/inference.py --model unet --tta | tee infer_unet.log
-
-python test/kaggle_test.py --model unet --tta | tee kaggle_unet.log
-```
-### ResNet34 + UNet
-```
-python DL_Lab2_B11107122_凃岳霖/src/train.py --model res_unet --epochs 200 --early_stop_patience 20 | tee train_res_unet.log
-
-python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model res_unet --auto_threshold | tee eval_res_unet.log
-
-python DL_Lab2_B11107122_凃岳霖/src/inference.py --model res_unet --threshold 0.45 --tta | tee infer_res_unet.log
-
-python test/kaggle_test.py --model res_unet --tta | tee kaggle_res_unet.log
-```
+**預期結果**：Best Val Dice ~0.9267 | Kaggle Dice ~0.92985
