@@ -8,20 +8,19 @@ import torch.nn as nn
 
 def set_seed(seed=42, deterministic=True):
     '''
-    設定所有隨機數生成器的種子，確保實驗的完全可重現性。
-    
-    這個函數設定以下的隨機種子：
-    - Python 內建 random 模組
-    - NumPy 的隨機數生成器
-    - PyTorch 在 CPU 上的隨機數生成器
-    - PyTorch 在 GPU 上的隨機數生成器（包括多 GPU）
-    - cuDNN 後端（禁用自動調整，使用確定性算法）
-    
     Args:
-        seed (int): 隨機種子值，默認為 42。
-        deterministic (bool): 是否啟用 PyTorch 確定性算法與 cuDNN 設定。
+        seed (int): 隨機種子值 (預設為 42)。
+        deterministic (bool): 是否啟用 PyTorch 確定性算法與 cuDNN 設定 (預設為 True, 以確保完全可重現的結果)。
+    Description:
+        設定所有相關的隨機種子，以確保在不同運行環境中得到相同的結果。
+        包括 Python 內建的 random 模組、NumPy、PyTorch 在 CPU 和 GPU 上的隨機種子設定。
+        當 deterministic=True 時，還會強制 PyTorch 使用確定性算法，並禁用 cuDNN 的自動調整功能，以確保每次運行都使用相同的算法，進一步增強可重現性。
+    Note:
+        - 在某些情況下，啟用 deterministic 可能會導致性能下降，因為某些非確定性算法可能更快。請根據實際需求選擇是否啟用。
+        - 即使設置了隨機種子，某些操作（如使用多 GPU 或特定的 cuDNN 操作）可能仍然具有非確定性行為，因此在這些情況下，完全可重現性可能無法保證。
     '''
-    random.seed(seed)       # Python 內建 random 模組可重現。如: 
+
+    random.seed(seed)       # Python 內建 random 模組可重現。
     np.random.seed(seed)    # NumPy 可重現。
     torch.manual_seed(seed) # PyTorch 在 CPU 上可重現。
     if torch.cuda.is_available():
@@ -35,30 +34,25 @@ def set_seed(seed=42, deterministic=True):
 
 def detect_optimal_num_workers(batch_size=16):
     '''
-    Detect the optimal number of workers for DataLoader based on system resources.
-    
     Args:
-        batch_size (int): The batch size used in DataLoader (optional, for reference).
-    
+        batch_size (int): DataLoader 的 batch size (預設為 16)。
     Returns:
-        dict: Contains "cpu_count", "recommended", and "safe_range".
-    
-    Guideline:
-        - num_workers should NOT exceed CPU count
-        - Too many workers cause memory overhead and process management costs
-        - Typical rule: num_workers = min(batch_size * 2, cpu_count)
-        - Start conservatively (2-4) and increase if data loading is the bottleneck
-        - Monitor GPU utilization: if GPU is idle, increase num_workers
+        (dict): 包含系統 CPU 核心數、推薦的 num_workers 設定、安全範圍以及建議說明的字典。
+    Description:
+        根據系統的 CPU 核心數和給定的 batch size ，計算並建議 DataLoader 的 num_workers 設定。通常建議的 num_workers 是 batch_size 的 2 倍，但不應超過系統的 CPU 核心數。
+        返回一個包含系統資訊和建議的字典，幫助使用者選擇合適的 num_workers 值，以平衡數據加載效率和系統資源使用。
+    Note:
+        - num_workers 的最佳值可能因系統配置、數據集大小和存儲設備性能而異。建議從推薦值開始，根據實際情況進行調整。
+        - 在某些環境中（如 Windows 或使用特定的數據集），過高的 num_workers 可能會導致問題，如死鎖或內存不足，因此建議在增加 num_workers 時密切監控系統資源。
     '''
+
+    # 獲取系統的 CPU 核心數。
     cpu_count = multiprocessing.cpu_count()
     
-    # Common heuristic: num_workers = min(batch_size * 2, cpu_count)
+    # 計算推薦的 num_workers，通常建議是 batch_size 的 2 倍，但不應超過 CPU 核心數。
     recommended = min(batch_size * 2, cpu_count)
     
-    # Clip to reasonable range
-    recommended = max(0, min(recommended, cpu_count))
-    
-    # Safe range: [0, cpu_count], where 0 = main process only
+    # 定義一個安全範圍，從 0 到 CPU 核心數。(0 表示在主進程中加載數據，適合小型數據集或調試；CPU 核心數表示最大並行加載，適合大型數據集和高性能存儲設備)
     safe_range = (0, cpu_count)
     
     result = {

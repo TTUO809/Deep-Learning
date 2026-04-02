@@ -182,7 +182,7 @@ def get_oxford_pet_dataloader(root_dir, split='train', batch_size=16, num_worker
         image_size (int or tuple): 圖片調整的大小 (預設調整為 (388, 388))。
         verbose (bool)   : 是否啟用詳細的 debug 輸出 (預設為 False)。
     Returns:
-        DataLoader: 包含指定資料分割的 DataLoader，已經套用必要的前處理轉換。
+        (DataLoader): 包含指定資料分割的 DataLoader，已經套用必要的前處理轉換。
     Description:
         負責創建 Oxford Pet Dataset 的 DataLoader。
         隨機性由外部程式入口統一呼叫 set_seed() 管理，這裡不重設全域 RNG。
