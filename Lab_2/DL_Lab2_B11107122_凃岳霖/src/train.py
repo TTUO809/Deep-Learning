@@ -82,7 +82,7 @@ def _build_dataloaders(train_args):
     )
     return train_loader, val_loader
 
-def _build_model(train_args, device):
+def build_model(train_args, device):
     """
     Args:
         train_args (argparse.Namespace): 包含所有訓練參數。
@@ -201,7 +201,7 @@ def _load_checkpoint_if_needed(train_args, device, model, optimizer, scheduler, 
 
     return start_epoch, best_val_dice, best_epoch, early_stop_counter
 
-def _process_images(images, model_name):
+def process_images(images, model_name):
     """
     Args:
         images (torch.Tensor): 原始輸入圖像張量，形狀為 (B, C, H, W)。
@@ -237,7 +237,7 @@ def _run_train_epoch(model, train_loader, optimizer, criterion, scaler, amp_enab
         同時使用 tqdm 顯示訓練進度條和當前的損失與 Dice 分數。
     """
     
-    model.train()
+    model.train()   # 設置模型為訓練模式，啟用 dropout 和 batch normalization 等訓練特定的行為。
     train_loss = 0.0
     train_dice = 0.0
 
@@ -245,7 +245,7 @@ def _run_train_epoch(model, train_loader, optimizer, criterion, scaler, amp_enab
     for images, masks in train_pbar:
         images, masks = images.to(device), masks.to(device)
 
-        images = _process_images(images, train_args.model)
+        images = process_images(images, train_args.model)
 
         optimizer.zero_grad()   # 清除之前的梯度，以免累積。
 
@@ -293,7 +293,7 @@ def _run_val_epoch(model, val_loader, amp_enabled, device, train_args):
         for images, masks in val_pbar:
             images, masks = images.to(device), masks.to(device)
 
-            images = _process_images(images, train_args.model)
+            images = process_images(images, train_args.model)
 
             with autocast(device_type=device.type, enabled=amp_enabled):
                 outputs = model(images)
@@ -344,10 +344,15 @@ def train(train_args):
     """
     Args:
         train_args (argparse.Namespace): 包含所有訓練參數。
+    Description:
+        執行整個訓練過程，包括配置打印、設備設置、數據加載器構建、模型構建、損失函數構建、優化器和學習率調度器構建、從 checkpoint 恢復訓練狀態（如果需要）、訓練循環以及早停機制。
+        在訓練過程中，會定期評估模型在驗證集上的表現，並根據驗證 Dice 分數來保存最佳模型和 checkpoint。 
     """
 
     # 啟動隨機種子鎖定，以確保訓練過程的可重現性。
     set_seed(train_args.seed)
+
+    # 打印訓練配置，讓用戶在訓練開始前確認所有參數設置。
     _print_run_config(train_args)
 
     # 設置設備 (GPU 或 CPU)。
@@ -358,7 +363,7 @@ def train(train_args):
     train_loader, val_loader = _build_dataloaders(train_args)
 
     # 構建模型，並將其移動到指定設備。
-    model = _build_model(train_args, device)
+    model = build_model(train_args, device)
 
     # 創建保存模型的目錄。
     os.makedirs(train_args.output_dir, exist_ok=True)

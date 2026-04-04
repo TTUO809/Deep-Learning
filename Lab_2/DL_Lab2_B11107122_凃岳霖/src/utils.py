@@ -1,6 +1,5 @@
 import os
 import random
-import multiprocessing
 import numpy as np
 
 import torch
@@ -181,11 +180,17 @@ class BCEDiceLoss(nn.Module):
 
 def resolve_model_config(args):
     """
-    優先使用使用者指定的模型路徑；若未提供，則依既有規則自動組裝。
     Args:
         args (argparse.Namespace): 需包含 model、model_path、save_model_dir 三個欄位。
     Returns:
-        Tuple[str, str]: (selected_model, model_path)
+        (Tuple[str, str]): (selected_model, model_path)
+    Description:
+        根據使用者提供的參數解析出要使用的模型類型和對應的模型權重路徑。
+        1. 首先檢查是否提供了 model_path 參數，如果有，則直接使用該路徑，並根據文件名稱推斷模型類型 (unet 或 res_unet)。
+        2. 如果沒有提供 model_path，則根據 model 參數和 save_model_dir 參數自動生成模型權重的路徑，假設模型權重文件命名為 "{model}_best.pth"。
+    Note:
+        - 這個函數的目的是為了讓用戶在推理時能夠靈活地指定模型權重的路徑，無論是直接提供完整路徑還是通過模型名稱和保存目錄自動生成路徑。
+        - 在使用 model_path 參數時，函數會嘗試從文件名稱中推斷模型類型，這要求用戶在命名模型權重文件時包含模型名稱 (如 "unet" 或 "res_unet")，以確保正確解析。
     """
     selected_model = args.model
 
@@ -193,9 +198,9 @@ def resolve_model_config(args):
         model_path = args.model_path
         model_filename = os.path.basename(model_path).lower()
 
-        if 'res_unet' in model_filename:
+        if 'res_unet' in model_filename  or 'res_unet' in args.model:
             selected_model = 'res_unet'
-        elif 'unet' in model_filename:
+        elif 'unet' in model_filename or 'unet' in args.model:
             selected_model = 'unet'
 
         return selected_model, model_path
