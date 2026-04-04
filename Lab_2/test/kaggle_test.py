@@ -157,30 +157,28 @@ def evaluate_submission(eval_args):
     print(f"🏆 Local Kaggle Test ({eval_args.model}) Dice Score: {final_dice:.5f}")
     print("="*60+ "\n")
 
+def get_kaggle_args():
+    parser = argparse.ArgumentParser(description="Local Kaggle Evaluation", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--data_dir'    , type=str, default=DATA_DIR    , help='Path to the dataset directory')
+    parser.add_argument('--gt_dir'      , type=str, default=GT_DIR      , help='Path to the ground truth directory')
+    parser.add_argument('--csv_dir'     , type=str, default=CSV_DIR     , help='Path to your inference CSV file')
+    parser.add_argument('--csv_path'    , type=str, default=''          , help='Direct path to submission CSV (overrides --csv_dir/--model/--tta when provided)')
+
+    parser.add_argument('--model'       , type=str, default='unet'      , help='Model name for evaluation', choices=['unet', 'res_unet'])
+
+    parser.add_argument('--tta'         , action='store_true'           , help='Whether to evaluate with Test Time Augmentation (TTA)')
+    
+    return parser.parse_args()
+
 if __name__ == '__main__':
-    # 1. 取得這支腳本所在的資料夾路徑 (也就是 /test/)
-    TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+    CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))            # path-to-/test/
+    Lab_2_DIR = os.path.dirname(CURRENT_DIR)                            # path-to-/Lab_2/
+    PROJECT_DIR = os.path.join(Lab_2_DIR, 'DL_Lab2_B11107122_凃岳霖')   # path-to-/Lab_2/DL_Lab2_B11107122_凃岳霖/
+    DATA_DIR = os.path.join(PROJECT_DIR, 'dataset', 'oxford-iiit-pet')  # path-to-/Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet
+    GT_DIR = os.path.join(DATA_DIR, 'annotations', 'trimaps')           # path-to-/Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/annotations/trimaps
+    CSV_DIR = os.path.join(PROJECT_DIR, 'submission')                   # path-to-/Lab_2/DL_Lab2_B11107122_凃岳霖/submission
     
-    # 2. 往上退一層到 Lab_2 的根目錄，這樣就能從根目錄開始拼接路徑，不會因為執行位置不同而找不到檔案
-    Lab_2_ROOT = os.path.dirname(TEST_DIR)
+    kaggle_args = get_kaggle_args()
 
-    # 3. 定義專案根目錄，這樣在程式中只要管檔名，路徑拼接會自動完成，確保無論在哪裡執行都能找到正確的檔案位置
-    PROJECT_ROOT = os.path.join(Lab_2_ROOT, 'DL_Lab2_B11107122_凃岳霖')
-
-    parser = argparse.ArgumentParser(description="Local Kaggle Evaluation")
-    
-    # 透過 os.path.join 與 PROJECT_ROOT 結合，使用者從此只要管「檔名」，剩下的路徑拼圖程式會自己拼好！
-    data_dir_default = os.path.join(PROJECT_ROOT, 'dataset', 'oxford-iiit-pet')
-    gt_dir_default = os.path.join(PROJECT_ROOT, 'dataset', 'oxford-iiit-pet', 'annotations', 'trimaps')
-    csv_dir_default = os.path.join(PROJECT_ROOT, 'submission')
-    parser.add_argument('--data_dir', type=str, default=data_dir_default, help=f'Path to the dataset directory (default: {data_dir_default})')
-    parser.add_argument('--gt_dir', type=str, default=gt_dir_default, help=f'Path to the ground truth directory (default: {gt_dir_default})')
-    parser.add_argument('--csv_dir', type=str, default=csv_dir_default, help=f'Path to your inference CSV file (default: {csv_dir_default})')
-    parser.add_argument('--csv_path', type=str, default='', help='Direct path to submission CSV (overrides --csv_dir/--model/--tta when provided)')
-
-    parser.add_argument('--model', type=str, default='unet', choices=['unet', 'res_unet'], help='Model name for evaluation (default: unet)')
-
-    parser.add_argument('--tta', action='store_true', help='Whether to evaluate with Test Time Augmentation (TTA)')
-    
-    args = parser.parse_args()
-    evaluate_submission(args)
+    evaluate_submission(kaggle_args)

@@ -13,6 +13,7 @@
 - [Validation](#validation)
 - [Inference (Generate Kaggle Submission CSV)](#inference-generate-kaggle-submission-csv)
 - [Local Kaggle Evaluation](#local-kaggle-evaluation)
+- [Auto Tuner (Batch Size & Num Workers)](#auto-tuner-batch-size--num-workers)
 - [Quick Start Commands](#quick-start-commands)
 - [Technical Details](TECHNICAL.md)
 
@@ -24,6 +25,7 @@
 Lab_2/
 ├── README.md                          ← 本文件
 ├── test/
+│   ├── auto_tuner.py                  ← 自動掃描最佳 Batch Size & Num Workers的工具
 │   └── kaggle_test.py                 ← 本地 Kaggle 評估工具
 └── DL_Lab2_B11107122_凃岳霖/
     ├── requirements.txt
@@ -74,6 +76,9 @@ pip install -r requirements.txt
 
 腳本會自動下載官方 Oxford-IIIT Pet 圖片與標注，並把你放在 `dataset/` 內的 Kaggle zip 解壓成 `.txt` 切分名單到 `annotations/`。
 
+- 官方資料 (`images.tar.gz` / `annotations.tar.gz`) 若已存在且已解壓，會自動跳過。
+- Kaggle zip 內的 `.txt` 若在 `annotations/` 已存在，會自動跳過不覆寫。
+
 ```bash
 # 工作目錄：Lab_2/
 python DL_Lab2_B11107122_凃岳霖/src/download_dataset.py
@@ -112,9 +117,10 @@ python DL_Lab2_B11107122_凃岳霖/src/train.py \
     --model unet \
     --epochs 200 \
     --batch_size 16 \
-    --learning_rate 5e-4 \
+    --num_workers 4 \
+    --lr 5e-4 \
     --early_stop_patience 20 \
-    --resume saved_models/unet_best.pth   # 斷點續訓（可選）
+    --ckpt ./DL_Lab2_B11107122_凃岳霖/saved_models/unet_checkpoint.pth   # 斷點續訓（可選）
 ```
 
 | 參數 | 預設值 | 說明 |
@@ -122,13 +128,14 @@ python DL_Lab2_B11107122_凃岳霖/src/train.py \
 | `--model` | `unet` | `unet` / `res_unet` |
 | `--epochs` | `20` | 訓練總 epoch 數 |
 | `--batch_size` | `16` | Batch size |
-| `--learning_rate` | `5e-4` | AdamW 學習率 |
-| `--weight_decay` | `1e-4` | AdamW weight decay |
+| `--num_workers` | `4` | DataLoader worker 數 |
+| `--lr` | `5e-4` | AdamW 學習率 |
+| `--wd` | `1e-4` | AdamW weight decay |
 | `--warmup_epochs` | `5` | LR Warmup epoch 數 |
 | `--early_stop_patience` | `5` | 驗證 Dice 不提升的容忍 epoch 數 |
 | `--grad_clip` | `1.0` | 梯度裁剪最大 norm |
-| `--use_focal` | `True` | 使用 FocalDiceLoss（否則用 BCEDiceLoss）|
-| `--resume` | `None` | 斷點模型路徑 |
+| `--use_bce` | `False` | 啟用後改用 BCEDiceLoss（預設使用 FocalDiceLoss） |
+| `--ckpt` | `None` | 斷點 checkpoint 路徑 |
 
 訓練結束後最佳模型自動儲存至 `saved_models/{model}_best.pth`。
 
@@ -149,10 +156,7 @@ python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --threshold 0.5
 ```bash
 python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
     --model unet \
-    --auto_threshold \
-    --threshold_start 0.3 \
-    --threshold_end 0.7 \
-    --threshold_step 0.05
+    --auto_threshold 
 ```
 
 ### Evaluate with Custom Model Path
@@ -175,6 +179,7 @@ python DL_Lab2_B11107122_凃岳霖/src/evaluate.py \
 | `--threshold_end` | `0.7` | 掃描結束值 |
 | `--threshold_step` | `0.05` | 掃描步長 |
 | `--batch_size` | `16` | Batch size |
+| `--num_workers` | `4` | DataLoader worker 數 |
 
 ---
 
@@ -211,12 +216,14 @@ python DL_Lab2_B11107122_凃岳霖/src/inference.py \
 | `--threshold` | `0.5` | 二值化閾值 |
 | `--tta` | — | 啟用 TTA（水平、垂直、雙向翻轉取平均）|
 | `--batch_size` | `16` | Batch size |
+| `--num_workers` | `4` | DataLoader worker 數 |
+| `--output_dir` | `submission/` | 輸出 CSV 目錄 |
 
 輸出 CSV 儲存至 `submission/`，命名規則：
 
 ```
 submission_{model}[_tta][_th{threshold*100}].csv
-# 範例：submission_unet_tta.csv、submission_res_unet_tta_th45.csv
+# 範例：submission_unet_tta.csv、submission_res_unet_th45_tta.csv
 ```
 
 ---
@@ -260,6 +267,58 @@ python test/kaggle_test.py \
 
 ---
 
+## Auto Tuner (Batch Size & Num Workers)
+
+`test/auto_tuner.py` 會用你目前專案內的 `oxford_pet.py` + `train.py` 來自動測試：
+
+- Stage 1: 找出安全且可用的最大 `batch_size`（依 `--vram_ratio`）
+- Stage 2: 在該 batch size 下測試 `num_workers` 吞吐量（images/sec）
+
+### Basic Usage
+
+```bash
+# 工作目錄：Lab_2/
+python test/auto_tuner.py
+```
+
+### Common Usage
+
+```bash
+# 指定模型與 GPU 記憶體安全比例
+python test/auto_tuner.py --model unet --vram_ratio 0.90
+
+# 測試 ResNet34-UNet
+python test/auto_tuner.py --model res_unet --vram_ratio 0.90
+
+# 若你的 src 或 dataset 路徑不同，可手動指定
+python test/auto_tuner.py \
+    --src_dir ./DL_Lab2_B11107122_凃岳霖/src \
+    --data_dir ./DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet
+```
+
+### Key Arguments
+
+| 參數 | 預設值 | 說明 |
+|------|--------|------|
+| `--model` | `unet` | `unet` / `res_unet` |
+| `--vram_ratio` | `0.95` | 允許使用的 VRAM 上限比例 |
+| `--src_dir` | `../DL_Lab2_B11107122_凃岳霖/src` | 專案 `src/` 路徑 |
+| `--data_dir` | `../DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet` | 資料集路徑 |
+| `--dataset_module` | `oxford_pet` | Dataset 模組名稱 |
+| `--train_module` | `train` | Train 模組名稱 |
+| `--num_workers_trials` | `3` | 每個 workers 設定重複測試次數 |
+| `--num_workers_test_batches` | `5` | 每次 throughput 測試 batch 數 |
+| `--no_amp` | `False` | 關閉 AMP（必要時用） |
+
+執行完成後會輸出可直接複製到訓練指令的建議值：
+
+```text
+ --batch_size <best_bs>
+ --num_workers <best_nw>
+```
+
+---
+
 ## Quick Start Commands
 
 基於實驗結果的建議執行流程（200 epoch、early stopping patience 20、TTA）。
@@ -282,7 +341,7 @@ python DL_Lab2_B11107122_凃岳霖/src/download_dataset.py
 
 ```bash
 # 訓練（約 7.5 小時）
-python ./Lab_2/DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 200 --early_stop_patience 20 --batch_size 16 --num_workers 4 | tee train_unet.log
+python DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 200 --early_stop_patience 20 --batch_size 16 --num_workers 4 | tee train_unet.log
 
 # 驗證集評估並自動掃描最佳 threshold
 python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --auto_threshold | tee eval_unet.log
@@ -312,4 +371,4 @@ python DL_Lab2_B11107122_凃岳霖/src/inference.py --model res_unet --threshold
 python test/kaggle_test.py --model res_unet --tta | tee kaggle_res_unet.log
 ```
 
-**預期結果**：Best Val Dice ~0.9267 | Kaggle Dice ~0.92985
+**預期結果**：Best Val Dice ~0.9267 | Kaggle Dice ~0.92958
