@@ -10,14 +10,14 @@ from models.resnet34_unet import ResNet34UNet
 from utils import set_seed, cal_dice_score, resolve_model_config
 
 def build_thresholds(start, end, step):
-    '''
+    """
     Args:
         start (float): 起始 threshold 值。
         end (float): 結束 threshold 值。
         step (float): threshold 之間的步長。
     Returns:
         List[float]: 生成的 threshold 列表。
-    '''
+    """
     if step <= 0:
         raise ValueError("threshold step must be > 0")
     if start > end:
@@ -35,7 +35,7 @@ def build_thresholds(start, end, step):
     return thresholds
 
 def evaluate_with_thresholds(model, val_loader, device, model_name, thresholds):
-    '''
+    """
     Args:
         model (torch.nn.Module): 已加載權重的模型。
         val_loader (torch.utils.data.DataLoader): 驗證集的 DataLoader。
@@ -44,7 +44,7 @@ def evaluate_with_thresholds(model, val_loader, device, model_name, thresholds):
         thresholds (List[float]): 要評估的 threshold 列表。
     Returns:
         Dice_TH[float, float]: 每個 threshold 對應的平均 Dice Score。
-    '''
+    """
     # (Dictionary) 累加每個 threshold 的 Dice 分數總和。
     dice_sums = {th: 0.0 for th in thresholds}
 
@@ -73,10 +73,10 @@ def evaluate_with_thresholds(model, val_loader, device, model_name, thresholds):
     return avg_dice
 
 def evaluate(eval_args):
-    '''
+    """
     Args:
         eval_args (argparse.Namespace): 包含所有評估參數。
-    '''
+    """
     # 設定 seed 以確保可重現的評估結果
     set_seed(eval_args.seed)
     

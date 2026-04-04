@@ -4,11 +4,11 @@ import zipfile
 import tarfile
 
 def download_and_extract(url, extract_to):
-    '''
+    """
     Args:
         url (str): 下載連結，應該指向一個壓縮檔案（如 .zip 或 .tar.gz）。
         extract_to (str): 解壓縮後的目標資料夾路徑。
-    '''
+    """
     file_name = url.split('/')[-1]
     file_path = os.path.join(extract_to, file_name)
     folder_name = file_name.rsplit('.', 1)[0]  # 去掉 .zip 或 .tar.gz 等後綴

@@ -13,12 +13,12 @@ from models.resnet34_unet import ResNet34UNet
 from utils import set_seed, resolve_model_config
 
 def rle_encode(mask):
-    '''
+    """
     Args:
         mask (numpy.ndarray): 二值化的遮罩圖像，形狀為 (H, W)，值為 0 或 1。
     Returns:
         (str): RLE 編碼的字符串，格式為 "start length start length ..."。
-    '''
+    """
     pixels = mask.flatten(order='F')  # 按列優先（Fortran 順序 = 先由上到下、再由左到右）展平圖像，以符合 RLE 的要求。
 
     # 1. 在前後各補一個 0，方便精準捕捉從 0 變 1，或從 1 變 0 的瞬間
@@ -33,10 +33,10 @@ def rle_encode(mask):
     return ' '.join(str(x) for x in runs)
 
 def inference(infer_args):
-    '''
+    """
     Args:
         infer_args (argparse.Namespace): 包含所有推理參數。
-    '''
+    """
     # 設定 seed 以確保可重現的推理結果
     set_seed(infer_args.seed)
 

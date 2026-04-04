@@ -3,15 +3,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ChannelAttention(nn.Module):
-    '''
+    """
     通道注意力機制，根據每個通道的重要性對特徵圖進行加權。
-    '''
+    """
     def __init__(self, in_planes, ratio=16):
-        '''
+        """
         Args:
             in_planes (int): 輸入通道數。
             ratio (int): 壓縮比例，默認為 16。
-        '''
+        """
         super(ChannelAttention, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)
@@ -24,38 +24,38 @@ class ChannelAttention(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入特徵圖，形狀為 (N, in_planes, H, W)。
         Returns:
             (torch.Tensor): 經過通道注意力機制加權後的特徵圖，形狀為 (N, in_planes, H, W)。
-        '''
+        """
         avg_out = self.fc(self.avg_pool(x))
         max_out = self.fc(self.max_pool(x))
         out = avg_out + max_out
         return self.sigmoid(out)
 
 class SpatialAttention(nn.Module):
-    '''
+    """
     空間注意力機制，根據每個空間位置的重要性對特徵圖進行加權。
-    '''
+    """
     def __init__(self, kernel_size=7):
-        '''
+        """
         Args:
             kernel_size (int): 卷積核大小，默認為 7。
-        '''
+        """
         super(SpatialAttention, self).__init__()
         padding = 3 if kernel_size == 7 else 1
         self.conv1 = nn.Conv2d(2, 1, kernel_size, padding=padding, bias=False)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入特徵圖，形狀為 (N, C, H, W)。
         Returns:
             (torch.Tensor): 經過空間注意力機制加權後的特徵圖，形狀為 (N, 1, H, W)。
-        '''
+        """
         avg_out = torch.mean(x, dim=1, keepdim=True)
         max_out, _ = torch.max(x, dim=1, keepdim=True)
         x_cat = torch.cat([avg_out, max_out], dim=1)
@@ -63,42 +63,42 @@ class SpatialAttention(nn.Module):
         return self.sigmoid(out)
 
 class CBAM(nn.Module):
-    '''
+    """
     結合通道注意力和空間注意力的 CBAM 模塊。
-    '''
+    """
     def __init__(self, in_planes, ratio=16, kernel_size=7):
-        '''
+        """
         Args:
             in_planes (int): 輸入通道數。
             ratio (int): 通道注意力的壓縮比例，默認為 16。
             kernel_size (int): 空間注意力的卷積核大小，默認為 7。
-        '''
+        """
         super(CBAM, self).__init__()
         self.ca = ChannelAttention(in_planes, ratio)
         self.sa = SpatialAttention(kernel_size)
 
     def forward(self, x):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入特徵圖，形狀為 (N, in_planes, H, W)。
         Returns:
             (torch.Tensor): 經過 CBAM 模塊加權後的特徵圖，形狀為 (N, in_planes, H, W)。
-        '''
+        """
         x = self.ca(x) * x  
         x = self.sa(x) * x  
         return x
 
 class BasicBlock(nn.Module):
-    '''
+    """
     ResNet34 + UNet 的基本卷積塊。包含兩層 3x3 卷積 、 Batch Normalization，以及 ReLU 激活函數，並且具有 skip connection。
-    '''
+    """
     def __init__(self, in_channels, out_channels, stride=1):
-        '''
+        """
         Args:
             in_channels (int): 輸入通道數。
             out_channels (int): 輸出通道數。
             stride (int): 卷積層的步幅，默認為 1。
-        '''
+        """
         super(BasicBlock, self).__init__()
 
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)  # C(in_channels->out_channels) , 3X3. (stride=stride, padding=1 for same size if stride=1, or half size if stride=2)
@@ -118,12 +118,12 @@ class BasicBlock(nn.Module):
             )
 
     def forward(self, x):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入特徵圖，形狀為 (N, in_channels, H, W)。
         Returns:
             (torch.Tensor): 輸出特徵圖，形狀為 (N, out_channels, H', W')，其中 H' 和 W' 取決於 stride 的值。
-        '''
+        """
         shortcut = self.downsample(x)
 
         # 殘差塊: Conv -> BN -> ReLU -> Conv -> BN -> [Add(Shortcut)] -> ReLU
@@ -138,16 +138,16 @@ class BasicBlock(nn.Module):
         return out
     
 class DecoderBlock(nn.Module):
-    '''
+    """
     ResNet34 + UNet 的 Decoder 塊。包含一個 2x2 的 Up-conv 和一個 BasicBlock 卷積塊，並且在上採樣後與對應的 Encoder 特徵圖進行 concatenate。
-    '''
+    """
     def __init__(self, in_channels, out_channels=32):
-        '''
+        """
         Args:
             in_channels (int): 輸入通道數。
             out_channels (int): 輸出通道數。
 
-        '''
+        """
         super(DecoderBlock, self).__init__()
 
         self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False)
@@ -159,13 +159,13 @@ class DecoderBlock(nn.Module):
         self.cbam = CBAM(out_channels)
 
     def forward(self, x, skip_x):
-        '''
+        """
         Args:
             x (torch.Tensor): 從上一層 Decoder 傳來的特徵圖，形狀為 (N, in_channels, H, W)。
             skip_x (torch.Tensor): 從 Encoder 傳來的跳躍連接特徵圖，形狀為 (N, skip_channels, H*2, W*2)。
         Returns:
             (torch.Tensor): 輸出特徵圖，形狀為 (N, out_channels, H*2, W*2)。
-        '''
+        """
         x = self.upsample(x)    # 放大
         x = self.conv(x)        # 濃縮成 32 通道 (藍色區塊)
         x = self.cbam(x)        # 聚焦注意力
@@ -179,11 +179,11 @@ class DecoderBlock(nn.Module):
     
 class ResNet34UNet(nn.Module):
     def __init__(self, in_channels=3, out_channels=1):
-        '''
+        """
         Args:
             in_channels (int): 輸入圖像的通道數。
             out_channels (int): 輸出圖像的通道數。
-        '''
+        """
         super(ResNet34UNet, self).__init__()
         
         # =============== Encoder =============== 
@@ -238,9 +238,9 @@ class ResNet34UNet(nn.Module):
         self._initialize_weights()
 
     def _initialize_weights(self):
-        '''
+        """
         使用 Kaiming He 初始化方法來初始化卷積層的權重，並且將偏置初始化為 0。
-        '''
+        """
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
@@ -251,7 +251,7 @@ class ResNet34UNet(nn.Module):
                 nn.init.constant_(m.bias, 0)
         
     def _make_layer(self, in_channels, out_channels, blocks, stride):
-        '''
+        """
         Args:
             in_channels (int): 輸入通道數。
             out_channels (int): 輸出通道數。
@@ -260,7 +260,7 @@ class ResNet34UNet(nn.Module):
         Returns:
             (nn.Sequential): 包含指定數量 BasicBlock 的 Sequential 模組。
         *** 用來構建 ResNet34 中的每一層卷積塊 (conv2_x, conv3_x, conv4_x, conv5_x)。
-        '''
+        """
         layers = []
         layers.append(BasicBlock(in_channels, out_channels, stride))
         for _ in range(1, blocks):
@@ -268,12 +268,12 @@ class ResNet34UNet(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入圖像，形狀為 (N, in_channels, H, W)。
         Returns:
             (torch.Tensor): 輸出圖像，形狀為 (N, out_channels, H, W)。
-        '''
+        """
         orig_size = x.shape[2:]
 
         # --- Encoder ---

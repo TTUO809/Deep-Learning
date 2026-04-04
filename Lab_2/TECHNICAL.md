@@ -76,23 +76,24 @@ Faithful re-implementation of [Ronneberger et al., 2015](https://arxiv.org/abs/1
 Input (3, 388, 388)
   │
   ├─ Pre-padding before UNet forward
-  │   └─ reflect pad 92 px per side → (3, 572, 572)
+  │   └─ reflect pad 92 px per side → Input (3, 572, 572)
   │
   ├─ Encoder
-  │   ├─ DoubleConv(3→64)   + MaxPool2d → (64, ~192, ~192)
-  │   ├─ DoubleConv(64→128) + MaxPool2d → (128, ~92, ~92)
-  │   ├─ DoubleConv(128→256)+ MaxPool2d → (256, ~42, ~42)
-  │   └─ DoubleConv(256→512)+ MaxPool2d → (512, ~17, ~17)
+  │   ├─ DoubleConv(3→64)    [(64,  568, 568) skip 1] + MaxPool2d → (64,  284, 284)  
+  │   ├─ DoubleConv(64→128)  [(128, 280, 280) skip 2] + MaxPool2d → (128, 140, 140)
+  │   ├─ DoubleConv(128→256) [(256, 136, 136) skip 3] + MaxPool2d → (256,  68,  68)
+  │   └─ DoubleConv(256→512) [(512,  64,  64) skip 4] + MaxPool2d → (512,  32,  32)
   │
-  ├─ Bottleneck: DoubleConv(512→1024)
+  ├─ Bottleneck
+  │   └─ DoubleConv(512→1024) → (1024, 28, 28)
   │
   ├─ Decoder
-  │   ├─ ConvTranspose2d(1024→512) + center_crop(skip) + DoubleConv(1024→512)
-  │   ├─ ConvTranspose2d(512→256)  + center_crop(skip) + DoubleConv(512→256)
-  │   ├─ ConvTranspose2d(256→128)  + center_crop(skip) + DoubleConv(256→128)
-  │   └─ ConvTranspose2d(128→64)   + center_crop(skip) + DoubleConv(128→64)
+  │   ├─ ConvTranspose2d(1024→512) [(512,  56,  56)] + center_crop(skip 4) + DoubleConv(1024→512) → (512,  52,  52)
+  │   ├─ ConvTranspose2d(512→256)  [(256, 104, 104)] + center_crop(skip 3) + DoubleConv(512→256)  → (256, 100, 100)
+  │   ├─ ConvTranspose2d(256→128)  [(128, 200, 200)] + center_crop(skip 2) + DoubleConv(256→128)  → (128, 196, 196)
+  │   └─ ConvTranspose2d(128→64)   [(64,  392, 392)] + center_crop(skip 1) + DoubleConv(128→64)   → (64, 388, 388)
   │
-  └─ Conv1x1(64→1) → Output
+  └─ Conv1x1(64→1) → Output (1, 388, 388)
 ```
 
 **Key details:**

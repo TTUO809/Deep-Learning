@@ -1,17 +1,16 @@
 import torch
 import torch.nn as nn
-import torchvision.transforms.functional as TF
 
 class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
-        '''
+        """
         Args:
             in_channels (int): 輸入通道數。
             out_channels (int): 輸出通道數。
         Description:
             實作 2015 Unet 論文原版的【Blue Arrow】-> (Conv 3x3, ReLU)*2 。
             卷積核大小為 3x3，且不使用 padding，因此輸出特徵圖的空間尺寸會比輸入小 2 像素。
-        '''
+        """
 
         # 使用 inplace=True 以節省內存。(直接在原始的 Tensor 記憶體位置上進行計算並覆寫結果，而不會額外配置一塊新的記憶體來存放輸出。)
         super(DoubleConv, self).__init__()
@@ -23,20 +22,20 @@ class DoubleConv(nn.Module):
         )
 
     def forward(self, x):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入特徵圖，形狀為 (B, in_channels, H, W)。
         Returns:
             (torch.Tensor): 輸出特徵圖，形狀為 (B, out_channels, H-4, W-4)。
         Description:
             將輸入特徵圖通過兩個卷積層和 ReLU 激活函數的序列進行處理，並返回結果。
-        '''
+        """
 
         return self.conv(x)
     
 class UNet(nn.Module):
     def __init__(self, in_channels=3, out_channels=1, feature_channels=[64, 128, 256, 512]):
-        '''
+        """
         Args:
             in_channels (int): 輸入圖像的通道數 (預設為 3, RGB 圖像)。
             out_channels (int): 輸出圖像的通道數 (預設為 1, 單通道二值圖像)。
@@ -49,11 +48,11 @@ class UNet(nn.Module):
                 - 4 層 DoubleConv ，每層卷積前接一個 2x2 的 Up-conv 層，通道數分別為 512、256、128、64。
             - Skip Connections (U 中間，跳躍連接用): 
                 - 在 Decoder 的每一層卷積前，將對應的 Encoder 層的輸出與上採樣後的特徵圖進行 concatenate ，以保留高分辨率的特徵信息。
-            - Buttleneck (U 下方，連接用):
+            - Bottleneck (U 下方，連接用):
                 - 在 Encoder 的最後一層和 Decoder 的第一層之間，加入一個卷積層，通道數為 1024 ，作為 Encoder 和 Decoder 之間的橋樑。
             - 最終輸出層:
                 - 將通道數轉換為 out_channels。
-        '''
+        """
 
         super(UNet, self).__init__()
 
@@ -63,7 +62,7 @@ class UNet(nn.Module):
             self.downs.append(DoubleConv(in_channels, feature)) # 添加 DoubleConv 層 【Blue Arrow * 2】。
             in_channels = feature                               # 更新 in_channels 為當前層的輸出通道數。
 
-        # Buttleneck
+        # Bottleneck
         self.bottleneck = DoubleConv(feature_channels[-1], feature_channels[-1] * 2)    # 將 Encoder 的最後一層通道數翻倍。
 
         # Decoder
@@ -76,7 +75,7 @@ class UNet(nn.Module):
         self.final_conv = nn.Conv2d(feature_channels[0], out_channels, kernel_size=1)  # 使用 1x1 卷積將通道數轉換為 out_channels。
     
     def center_crop(self, x, target_height, target_width):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入特徵圖，形狀為 (B, C, H, W)。
             target_height (int): 目標高度。
@@ -85,7 +84,7 @@ class UNet(nn.Module):
             (torch.Tensor): 裁剪後的特徵圖，形狀為 (B, C, target_height, target_width)。
         Description:
             由於 UNet 的設計會導致 Decoder 層的特徵圖大小與對應的 Encoder 層的特徵圖大小不匹配，因此需要進行中心裁剪以對齊大小。
-        '''
+        """
 
         _, _, h, w = x.size()
         start_h = (h - target_height) // 2
@@ -93,14 +92,14 @@ class UNet(nn.Module):
         return x[:, :, start_h:start_h + target_height, start_w:start_w + target_width]
     
     def forward(self, x):
-        '''
+        """
         Args:
             x (torch.Tensor): 輸入圖像，形狀為 (B, C, H, W)。
         Returns:
             (torch.Tensor): 輸出圖像，形狀為 (B, out_channels, H, W)。
         Description:
-            實現 UNet 的前向傳播過程，包含 Encoder、Buttleneck、Decoder 和 Skip Connections 的操作。
-        '''
+            實現 UNet 的前向傳播過程，包含 Encoder、Bottleneck、Decoder 和 Skip Connections 的操作。
+        """
 
         skip_connections = []       # 存儲 Encoder 層的輸出，之後用在 Decoder。
 
@@ -110,7 +109,7 @@ class UNet(nn.Module):
             skip_connections.append(x)                      # 保存當前層的輸出。         【Gray Arrow】
             x = nn.MaxPool2d(kernel_size=2, stride=2)(x)    # Max Pooling。             【Red Arrow】
 
-        # Buttleneck
+        # Bottleneck
         x = self.bottleneck(x)
 
         # Decoder

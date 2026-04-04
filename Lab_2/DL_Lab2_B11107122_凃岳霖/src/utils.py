@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 
 def set_seed(seed=42, deterministic=True):
-    '''
+    """
     Args:
         seed (int): 隨機種子值 (預設為 42)。
         deterministic (bool): 是否啟用 PyTorch 確定性算法與 cuDNN 設定 (預設為 True, 以確保完全可重現的結果)。
@@ -18,7 +18,7 @@ def set_seed(seed=42, deterministic=True):
     Note:
         - 在某些情況下，啟用 deterministic 可能會導致性能下降，因為某些非確定性算法可能更快。請根據實際需求選擇是否啟用。
         - 即使設置了隨機種子，某些操作（如使用多 GPU 或特定的 cuDNN 操作）可能仍然具有非確定性行為，因此在這些情況下，完全可重現性可能無法保證。
-    '''
+    """
 
     random.seed(seed)       # Python 內建 random 模組可重現。
     np.random.seed(seed)    # NumPy 可重現。
@@ -33,7 +33,7 @@ def set_seed(seed=42, deterministic=True):
         torch.use_deterministic_algorithms(True, warn_only=True)  # 強制所有 PyTorch 操作使用確定性算法。
 
 def detect_optimal_num_workers(batch_size=16):
-    '''
+    """
     Args:
         batch_size (int): DataLoader 的 batch size (預設為 16)。
     Returns:
@@ -44,7 +44,7 @@ def detect_optimal_num_workers(batch_size=16):
     Note:
         - num_workers 的最佳值可能因系統配置、數據集大小和存儲設備性能而異。建議從推薦值開始，根據實際情況進行調整。
         - 在某些環境中（如 Windows 或使用特定的數據集），過高的 num_workers 可能會導致問題，如死鎖或內存不足，因此建議在增加 num_workers 時密切監控系統資源。
-    '''
+    """
 
     # 獲取系統的 CPU 核心數。
     cpu_count = multiprocessing.cpu_count()
@@ -65,13 +65,13 @@ def detect_optimal_num_workers(batch_size=16):
     return result
 
 def resolve_model_config(args):
-    '''
+    """
     優先使用使用者指定的模型路徑；若未提供，則依既有規則自動組裝。
     Args:
         args (argparse.Namespace): 需包含 model、model_path、save_model_dir 三個欄位。
     Returns:
         Tuple[str, str]: (selected_model, model_path)
-    '''
+    """
     selected_model = args.model
 
     if args.model_path:
@@ -89,7 +89,7 @@ def resolve_model_config(args):
     return selected_model, model_path
 
 def cal_dice_score(predict_logits, GT_masks, threshold=0.5, smooth=1e-6, use_pred_binary=True):
-    '''
+    """
     Args:
         predict_logits (torch.Tensor): 模型預測的輸出，形狀為 (B, 1, H, W)，包含每個像素屬於前景的概率。
         GT_masks (torch.Tensor): 真實的遮罩，形狀為 (B, 1, H, W)。
@@ -101,7 +101,7 @@ def cal_dice_score(predict_logits, GT_masks, threshold=0.5, smooth=1e-6, use_pre
     Returns:
         (float): Dice Score 的平均值，範圍在 [0, 1] 之間，值越大表示預測與真實遮罩越接近。
     *** Dice = 2 * |A ∩ B| / (|A| + |B|)
-    '''
+    """
 
     probs_logits = torch.sigmoid(predict_logits)        # 將模型輸出轉換為 0~1 的概率值。
     
@@ -121,16 +121,16 @@ def cal_dice_score(predict_logits, GT_masks, threshold=0.5, smooth=1e-6, use_pre
         return dice_score.mean()        # 返回 Soft Dice Score 的平均值，保留梯度信息。
 
 class FocalLoss(nn.Module):
-    '''
+    """
     用於處理正負樣本極度不平衡問題。
-    '''
+    """
     def __init__(self, alpha=0.5, gamma=2.0, reduction='mean'):
-        '''
+        """
         Args:
             alpha (float): 正樣本的權重，默認為 0.5。
             gamma (float): 調整難易樣本的參數，默認為 2.0。
             reduction (str): 指定損失的減少方式，默認為 'mean'。
-        '''
+        """
         super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
@@ -138,13 +138,13 @@ class FocalLoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, predict_logits, GT_masks):
-        '''
+        """
         Args:
             predict_logits (torch.Tensor): 模型預測的輸出，形狀為 (B, 1, H, W)，包含每個像素屬於前景的概率。
             GT_masks (torch.Tensor): 真實的遮罩，形狀為 (B, 1, H, W)。
         Returns:
             (torch.Tensor): Focal Loss 的平均值。
-        '''
+        """
         bce_loss = self.bce_with_logits(predict_logits, GT_masks)  # 計算每個像素的 BCE Loss。
         pt = torch.exp(-bce_loss)  # pt 是模型對正確類別的預測概率。
 
@@ -159,58 +159,58 @@ class FocalLoss(nn.Module):
         return focal_loss
 
 class FocalDiceLoss(nn.Module):
-    '''
+    """
     Focal Loss + Dice Loss 的組合損失函數。
-    '''
+    """
     def __init__(self, focal_weight=0.5, dice_weight=0.5, alpha=0.5, gamma=2.0):
-        '''
+        """
         Args:
             focal_weight (float): Focal Loss 的權重，默認為 0.5。
             dice_weight (float): Dice Loss 的權重，默認為 0.5。
             alpha (float): Focal Loss 中正樣本的權重，默認為 0.5。
             gamma (float): Focal Loss 中調整難易樣本的參數，默認為 2.0。
-        '''
+        """
         super(FocalDiceLoss, self).__init__()
         self.focal = FocalLoss(alpha=alpha, gamma=gamma)
         self.focal_weight = focal_weight
         self.dice_weight = dice_weight
 
     def forward(self, predict_logits, GT_masks):
-        '''
+        """
         Args:
             predict_logits (torch.Tensor): 模型預測的輸出，形狀為 (B, 1, H, W)，包含每個像素屬於前景的概率。
             GT_masks (torch.Tensor): 真實的遮罩，形狀為 (B, 1, H, W)。
         Returns:
             (torch.Tensor): 結合 Focal Loss 和 Dice Loss 的加權總損失值。
-        '''
+        """
         focal_loss = self.focal(predict_logits, GT_masks)
         dice_loss = 1.0 - cal_dice_score(predict_logits, GT_masks, use_pred_binary=False)
         
         return (self.focal_weight * focal_loss) + (self.dice_weight * dice_loss)
 
 class BCEDiceLoss(nn.Module):
-    '''
+    """
     BCE + Dice Loss 的組合損失函數。
-    '''
+    """
     def __init__(self, bce_weight=0.5, dice_weight=0.5):
-        '''
+        """
         Args:
             bce_weight (float): BCE Loss 的權重，默認為 0.5。
             dice_weight (float): Dice Loss 的權重，默認為 0.5。
-        '''
+        """
         super(BCEDiceLoss, self).__init__()
         self.bce = nn.BCEWithLogitsLoss()
         self.bce_weight = bce_weight
         self.dice_weight = dice_weight
 
     def forward(self, predict_logits, GT_masks):
-        '''
+        """
         Args:
             predict_logits (torch.Tensor): 模型預測的輸出，形狀為 (B, 1, H, W)，包含每個像素屬於前景的概率。
             GT_masks (torch.Tensor): 真實的遮罩，形狀為 (B, 1, H, W)。
         Returns:
             (torch.Tensor): 結合 BCE Loss 和 Dice Loss 的加權總損失值。
-        '''
+        """
         bce_loss = self.bce(predict_logits, GT_masks)
         dice_loss = 1.0 - cal_dice_score(predict_logits, GT_masks, use_pred_binary=False)
         
