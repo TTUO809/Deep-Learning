@@ -171,6 +171,16 @@ Focal Loss with $\alpha=0.5$, $\gamma=2.0$:
 
 $$\mathcal{L}_\text{Focal} = -\alpha_t (1 - p_t)^\gamma \log(p_t)$$
 
+For binary segmentation, with ground-truth label $y \in \{0,1\}$ and predicted probability $p=\sigma(z)$:
+
+$$p_t = y\,p + (1-y)(1-p)$$
+
+$$\alpha_t = y\,\alpha + (1-y)(1-\alpha) =
+\begin{cases}
+\alpha, & y=1 \\
+1-\alpha, & y=0
+\end{cases}$$
+
 Focuses training on hard-to-classify (mis-predicted) pixels; down-weights confident correct predictions.
 
 ### BCEDiceLoss (alternative)
@@ -196,8 +206,8 @@ LR schedule overview:
 
 ```
 Epoch:   0───────5──────────────────────────────────────────200
-LR:      ~0  ──▶ 5e-4  ──▶ (cosine decay) ──▶ 1e-6
-          ↑ warmup ↑         ↑ cosine annealing ↑
+LR:      ~0 ─▶ 5e-4  ─────────▶ (cosine decay) ─────────▶ 1e-6
+         ↑ warmup ↑            ↑ cosine annealing ↑
 ```
 
 The best model (by val Dice) is saved to `saved_models/{model}_best.pth` automatically.

@@ -18,7 +18,7 @@ DEFAULT_SYMBOL_MAP = {
     'dataset_class': 'OxfordPetDataset',
     'build_model': '_build_model',
     'process_images': '_process_images',
-    'build_loss_function': '_build_loss_function',
+    'build_criterion': '_build_criterion',
     'build_optimizer_scheduler': '_build_optimizer_scheduler',
 }
 
@@ -32,7 +32,7 @@ def load_project_components(src_dir, dataset_module, train_module, symbol_map=No
             - dataset_class -> OxfordPetDataset
             - build_model -> _build_model
             - process_images -> _process_images
-            - build_loss_function -> _build_loss_function
+            - build_criterion -> _build_criterion
             - build_optimizer_scheduler -> _build_optimizer_scheduler
     Returns:
         dict: 包含從 dataset_module 和 train_module 加載的必要類別和函數的字典。
@@ -58,7 +58,7 @@ def load_project_components(src_dir, dataset_module, train_module, symbol_map=No
         'dataset_class',
         'build_model',
         'process_images',
-        'build_loss_function',
+        'build_criterion',
         'build_optimizer_scheduler',
     }
     missing_keys = required_keys - set(symbol_map.keys())
@@ -70,7 +70,7 @@ def load_project_components(src_dir, dataset_module, train_module, symbol_map=No
     train_symbols = {
         'build_model': symbol_map['build_model'],
         'process_images': symbol_map['process_images'],
-        'build_loss_function': symbol_map['build_loss_function'],
+        'build_criterion': symbol_map['build_criterion'],
         'build_optimizer_scheduler': symbol_map['build_optimizer_scheduler'],
     }
 
@@ -85,7 +85,7 @@ def load_project_components(src_dir, dataset_module, train_module, symbol_map=No
         'Dataset': getattr(ds_mod, dataset_symbol),
         'build_model': getattr(tr_mod, train_symbols['build_model']),
         'process_images': getattr(tr_mod, train_symbols['process_images']),
-        'build_loss_function': getattr(tr_mod, train_symbols['build_loss_function']),
+        'build_criterion': getattr(tr_mod, train_symbols['build_criterion']),
         'build_optimizer_scheduler': getattr(tr_mod, train_symbols['build_optimizer_scheduler']),
     }
 
@@ -168,7 +168,7 @@ class HardwareTuner:
             try:
                 # 每次 batch size 測試都重建模型/優化器，避免前一次測試影響結果。
                 self.model = self.api['build_model'](self.args, self.device)
-                criterion = self.api['build_loss_function'](self.args)
+                criterion = self.api['build_criterion'](self.args)
                 optimizer, _ = self.api['build_optimizer_scheduler'](self.args, self.model)
                 scaler = GradScaler(self.device.type, enabled=self.amp_enabled)
 
@@ -324,6 +324,8 @@ class HardwareTuner:
 
 def get_args():
     """
+    Returns:
+        argparse.Namespace: 包含從命令列解析的參數。
     Description:
         用於解析命令列參數，並提供一些預設值和說明，並且允許注入來自 train.py 的其他參數，以確保在測試過程中能夠使用與訓練過程相同的模型配置。
     """

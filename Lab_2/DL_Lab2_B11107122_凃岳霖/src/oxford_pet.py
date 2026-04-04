@@ -5,7 +5,7 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
-from utils import set_seed, detect_optimal_num_workers
+from utils import set_seed
 
 class OxfordPetDataset(Dataset):
 
@@ -227,36 +227,24 @@ if __name__ == "__main__":
         matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    # 啟動隨機種子鎖定，以確保訓練過程的可重現性。
-    set_seed(42, deterministic=False)
-
     print("=== Start Oxford Pet Dataset Test ===")
 
-    image_size = 388
+    # 啟動隨機種子鎖定，以確保訓練過程的可重現性。
+    seed = 42
+    set_seed(seed, deterministic=False)
 
     print(f"--- [Dataset first sample test] ---")
-    dataset = OxfordPetDataset(DATA_DIR=DATA_DIR, split='train', seed=42, image_size=image_size, verbose=True)
+    image_size = 388
+    dataset = OxfordPetDataset(DATA_DIR=DATA_DIR, split='train', seed=seed, image_size=image_size, verbose=True)
 
     image, mask = dataset[0]
-
     print(f"Image shape: {image.shape}")
     print(f"Mask shape: {mask.shape}")
     print(f"Mask value range: [{mask.min()}, {mask.max()}]")
 
     print(f"\n--- [DataLoader batch test] ---")
-    batch_size = 2
-    
-    # 根據系統資源檢測並建議 DataLoader 的 num_workers 設定，提供詳細的系統資訊和建議，以幫助使用者選擇合適的 num_workers 值。
-    worker_info = detect_optimal_num_workers(batch_size=batch_size)
-    print(f"\n[System Info]")
-    print(f"  CPU Cores: {worker_info['cpu_count']}")
-    print(f"  Recommended num_workers: {worker_info['recommended']}")
-    print(f"  Safe range: {worker_info['safe_range'][0]} ~ {worker_info['safe_range'][1]}")
-    print(f"  Advice: {worker_info['advice']}")
-    
-    # 為了確保測試的穩定性，這裡直接使用推薦的 num_workers 值，並在輸出中明確指出這一點。
-    num_workers = worker_info['recommended']
-    print(f"\nUsing num_workers={num_workers} for stable testing.")
+    batch_size = 16
+    num_workers = 4
 
     print("\nLoading Kaggle train split (train) ...")
     train_loader = get_oxford_pet_dataloader(DATA_DIR=DATA_DIR, batch_size=batch_size, split='train', num_workers=num_workers, image_size=image_size, verbose=True)
@@ -274,21 +262,33 @@ if __name__ == "__main__":
         print(f"Train batch mask shape: {masks_batch.shape} (expected: [{batch_size}, 1, {image_size}, {image_size}])")
 
         # 顯示這個 Batch 的圖片和遮罩，幫助確認前處理和增強是否正常工作。
-        plt.figure(figsize=(12, 6))
+        # 為了可讀性，限制預覽數量並採用動態排版，避免 batch 大時圖太擠。
+        preview_count = min(batch_size, 8)          # 最多預覽 8 張圖片，確保在 batch_size 大時也能清晰顯示。【8】
+        cols = min(4, preview_count)                # 每行最多顯示 4 張圖片，確保排版不會太擠。根據預覽數量動態調整行數。【4】
+        groups = int(np.ceil(preview_count / cols)) # 計算需要多少組（每組包含兩行：一行顯示 Image，一行顯示 Mask），以確保所有預覽圖片都能顯示出來。ceil 向上取整，確保有足夠的行數來顯示所有預覽圖片。【2】
+        rows = groups * 2                           # 每組圖片佔兩行（第一行顯示 Image，第二行顯示 Mask），所以總行數是組數的兩倍。【4】
+        plt.figure(figsize=(cols * 4, rows * 3))    # 根據列數和行數動態調整整體圖像的大小，確保每張圖片都有足夠的空間顯示細節。每張圖片預留約 4x3 英寸的空間，根據實際預覽數量自動調整整體尺寸。【16x12】
+        
+        # 反 Normalize 的 mean 和 std，確保圖像顯示正常。
         mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
         std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
-        for i in range(batch_size):
 
-            # 顯示 Image (分上下兩行，每行 batch_size 個圖，目前在上行)。
-            plt.subplot(2, batch_size, i + 1)
+        for i in range(preview_count):  
+            r = (i // cols) * 2                 # 每組圖片佔兩行，所以行數是索引除以列數後乘以 2。這樣可以確保每組圖片的 Image 和 Mask 分別顯示在相鄰的兩行【0 / 2】
+            c = i % cols                        # 列數是索引對列數取模，確保圖片在每行內水平排列。【0~3】
+            image_pos = r * cols + c + 1        # 圖像位置計算：行數乘以列數加上列索引，再加 1 因為 subplot 的索引從 1 開始。【1~4 / 9~12】
+            mask_pos = (r + 1) * cols + c + 1   # 遮罩位置計算：行數加 1 後乘以列數加上列索引，再加 1，確保遮罩顯示在圖像下方。【5~8 / 13~16】
+
+            # 顯示 Image。
+            plt.subplot(rows, cols, image_pos)
             image_np = images_batch[i].permute(1, 2, 0).numpy()
             image_np = np.clip(image_np * std + mean, 0.0, 1.0) # 反 Normalize 後再顯示，確保圖像看起來正常。
             plt.imshow(image_np)
             plt.title(f"Train Image {i}")
             plt.axis('off')
 
-            # 顯示 Mask (目前在下行)。
-            plt.subplot(2, batch_size, i + batch_size + 1)
+            # 顯示 Mask。
+            plt.subplot(rows, cols, mask_pos)
             plt.imshow(masks_batch[i].squeeze(), cmap='gray') # 【torch.float32 (1, H, W) -(squeeze)-> np.array (H, W)】採灰階顯示。
             plt.title(f"Train Mask {i}")
             plt.axis('off')

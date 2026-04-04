@@ -282,7 +282,7 @@ python DL_Lab2_B11107122_凃岳霖/src/download_dataset.py
 
 ```bash
 # 訓練（約 7.5 小時）
-python DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 200 --early_stop_patience 20 | tee train_unet.log
+python ./Lab_2/DL_Lab2_B11107122_凃岳霖/src/train.py --model unet --epochs 200 --early_stop_patience 20 --batch_size 16 --num_workers 4 | tee train_unet.log
 
 # 驗證集評估並自動掃描最佳 threshold
 python DL_Lab2_B11107122_凃岳霖/src/evaluate.py --model unet --auto_threshold | tee eval_unet.log
