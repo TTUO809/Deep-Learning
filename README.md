@@ -20,3 +20,4 @@
 | [Lab 2](Lab_2/README.md) | Binary Semantic Segmentation (Oxford-IIIT Pet) |
 | Lab 3 | TBD |
 | Lab 4 | TBD |
+| [Lab 5](Lab_5/README.md) | Value-Based Reinforcement Learning |
