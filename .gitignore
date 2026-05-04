@@ -8,7 +8,10 @@
 wandb/
 !Lab_2/Log_best/*.log
 !Lab_2/DL_Lab2_B11107122_凃岳霖/submission/best/*.csv
-!Lab_5/submission/*
+Lab_5/old/*
+Lab_5/Reference/*
+Lab_5/submission/*
+!Lab_5/Report/figures/*.png
 
 Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/
 Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/
@@ -18,3 +21,11 @@ __pycache__/
 *.pyc
 .DS_Store
 .ipynb_checkpoints/
+
+# LaTeX build artifacts
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.synctex.gz
+*.toc

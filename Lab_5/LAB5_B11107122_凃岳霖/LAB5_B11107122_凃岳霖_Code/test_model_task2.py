@@ -44,26 +44,16 @@ class AtariPreprocessor:
     def __init__(self, frame_stack=4):
         self.frame_stack = frame_stack
         self.frames = deque(maxlen=frame_stack)
-        self.last_raw_obs = None
 
-    def _gray_resize(self, obs):
+    def preprocess(self, obs):
         if len(obs.shape) == 3 and obs.shape[2] == 3:
             gray = cv2.cvtColor(obs, cv2.COLOR_RGB2GRAY)
         else:
             gray = obs
-        return cv2.resize(gray, (84, 84), interpolation=cv2.INTER_AREA)
-
-    def preprocess(self, obs):
-        # Max-pool with previous raw frame to remove Atari sprite flickering
-        if self.last_raw_obs is not None:
-            maxed = np.maximum(obs, self.last_raw_obs)
-        else:
-            maxed = obs
-        self.last_raw_obs = obs
-        return self._gray_resize(maxed)
+        resized = cv2.resize(gray, (84, 84), interpolation=cv2.INTER_AREA)
+        return resized
 
     def reset(self, obs):
-        self.last_raw_obs = None
         frame = self.preprocess(obs)
         self.frames = deque([frame for _ in range(self.frame_stack)], maxlen=self.frame_stack)
         return np.stack(self.frames, axis=0)
@@ -130,7 +120,7 @@ def evaluate(args):
                 state = next_obs
 
         rewards.append(int(total_reward))
-        print(f"Environment steps: {args.env_steps}; seed: {args.seed + ep}; eval reward: {int(total_reward)}")
+        print(f"seed: {args.seed + ep}; eval reward: {int(total_reward)}")
 
         if args.record_video and frames:
             env_tag = args.env_name.replace("/", "_").replace("-", "_")
@@ -145,35 +135,12 @@ def evaluate(args):
 
     avg = np.mean(rewards)
     print(f"Average reward: {avg:.2f}")
-    
-    # 判斷 Task 1
-    if args.task == 1 or (args.task == 0 and not is_atari):
+    if not is_atari:
         score_pct = min(avg, 480) / 480 * 15
         print(f"Estimated Task 1 score: {score_pct:.2f}% / 15%")
-        
-    # 判斷 Task 2 (若為 Atari 環境且未傳入 env_steps)
-    elif args.task == 2 or (args.task == 0 and is_atari and args.env_steps == 0):
+    else:
         score_pct = min(avg, 19) / 40 * 20 + 21 / 40 * 20
         print(f"Estimated Task 2 score: {score_pct:.2f}% / 20%")
-        
-    # 判斷 Task 3 (明確指定或帶有 env_steps 的 Atari 評估)
-    elif args.task == 3 or (args.task == 0 and is_atari and args.env_steps > 0):
-        if avg >= 19:
-            if args.env_steps <= 600000:
-                score_pct = 20
-            elif args.env_steps <= 1000000:
-                score_pct = 17
-            elif args.env_steps <= 1500000:
-                score_pct = 15
-            elif args.env_steps <= 2000000:
-                score_pct = 13
-            elif args.env_steps <= 2500000:
-                score_pct = 11
-            else:
-                score_pct = 8
-            print(f"Estimated Task 3 score at {args.env_steps} steps: {score_pct}% / 20%")
-        else:
-            print(f"Estimated Task 3 score at {args.env_steps} steps: 0% / 20% (Target score 19 not reached, current: {avg:.2f})")
 
 
 if __name__ == "__main__":
@@ -184,7 +151,6 @@ if __name__ == "__main__":
     parser.add_argument("--seed",       type=int, default=0,                help="Random seed for evaluation [Do NOT CHANGE]")
     parser.add_argument("--env_name",   type=str, required=True,            help="Gym env id, e.g. CartPole-v1 or ALE/Pong-v5")
     parser.add_argument("--env-steps",  type=int, default=0,                help="Training step count for this checkpoint (used in output and video filenames)")
-    parser.add_argument("--task",       type=int, default=0,                help="Specify task number (1, 2, or 3) to calculate accurate score")
     parser.add_argument("--record-video", action="store_true")
     args = parser.parse_args()
     evaluate(args)
