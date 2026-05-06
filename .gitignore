@@ -1,31 +1,68 @@
-# Exclude large deep learning files
+# =================================================================
+# ML/DL Model Weights and Large Data Files
+# =================================================================
+# Exclude model weights and training checkpoints
 *.pth
+*.pt
+
+# Exclude training logs and data exports
 *.log
 *.csv
+
+# Exclude media files by default
+# (Specific project assets are re-included in the sections below)
 *.png
-*.pt
 *.mp4
 
+# Global exclusion for generic ignore and wandb folders
+Ignore/
+wandb/
+
+# =================================================================
+# Lab-Specific Rules
+# =================================================================
+
+# --- Lab 2: Computer Vision Project ---
+# Exclude heavy model directories and large datasets
 Lab_2/DL_Lab2_B11107122_凃岳霖/saved_models/
 Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/
+
+# Re-include essential logs and submission files for Lab 2
 !Lab_2/Log_best/*.log
 !Lab_2/DL_Lab2_B11107122_凃岳霖/submission/best/*.csv
 
-wandb/
-Lab_5/Ignore/*
+# --- Lab 5: Reinforcement Learning (DQN/DDQN) ---
+# Re-include figures for the report and specific model weights
 !Lab_5/Report/figures/*.png
 !Lab_5/LAB5_B11107122_凃岳霖/*.pt
 
-# Exclude system and development artifacts
+# =================================================================
+# System, IDE, and Environment Artifacts
+# =================================================================
+# Python bytecode and cache
 __pycache__/
 *.pyc
+
+# OS-specific metadata (macOS)
 .DS_Store
+
+# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
 
-# LaTeX build artifacts
+# Local VS Code editor configurations (Path-dependent)
+.vscode/
+
+# =================================================================
+# LaTeX Documentation & Compilation Artifacts
+# =================================================================
+# Exclude latexmk configuration and engine-generated helper files
+*.latexmkrc
 *.aux
 *.fdb_latexmk
 *.fls
 *.out
 *.synctex.gz
 *.toc
+
+# Exclude final compiled PDF (Can be regenerated from .tex source)
+main.pdf
