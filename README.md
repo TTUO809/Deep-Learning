@@ -21,3 +21,4 @@
 | Lab 3 | TBD |
 | Lab 4 | TBD |
 | [Lab 5](Lab_5/README.md) | Value-Based Reinforcement Learning |
+| [Lab 6](Lab_6/README.md) | Generative Models |
