@@ -15,7 +15,7 @@
 - 評估：將生成圖像餵入 pretrained ResNet18 evaluator 計算 accuracy
 
 
-<p align="center"> <img src="Pasted image 20260506182943.png " /> </p>
+<p align="center"> <img src="./Images/Pasted_image_20260506182943.png " /> </p>
 
 ---
 
@@ -45,9 +45,9 @@ images/
 
 ## 相關筆記索引
 
-- [[01_Dataset]]
-- [[02_Model_Architecture]]
-- [[03_Training_Details]]
-- [[04_Evaluation]]
-- [[05_Scoring_Criteria]]
-- [[06_Implementation_Checklist]]
+- [[01_Dataset]](./01_Dataset.md)
+- [[02_Model_Architecture]](./02_Model_Architecture.md)
+- [[03_Training_Details]](./03_Training_Details.md)
+- [[04_Evaluation]](./04_Evaluation.md)
+- [[05_Scoring_Criteria]](./05_Scoring_Criteria.md)
+- [[06_Implementation_Checklist]](./06_Implementation_Checklist.md)

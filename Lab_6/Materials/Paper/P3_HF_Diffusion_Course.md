@@ -172,7 +172,7 @@ class MultiLabelConditionedUnet(nn.Module):
 
 ### 方法二：AdaGN 注入（推薦，效果最好）
 
-參見 [[P2_Beat_GANs]] 的 AdaGN 段落，將 label embedding 與 time embedding 一起注入 ResBlock。
+參見 [[P2_Beat_GANs]](./P2_Beat_GANs.md) 的 AdaGN 段落，將 label embedding 與 time embedding 一起注入 ResBlock。
 
 ---
 

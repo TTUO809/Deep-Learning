@@ -1,6 +1,6 @@
 # Training Details
 
-> 綜合來源：[[P1_DDPM]] · [[P2_Beat_GANs]] · [[P3_HF_Diffusion_Course]]  
+> 綜合來源：[[P1_DDPM]](./Paper/P1_DDPM.md) · [[P2_Beat_GANs]](./Paper/P2_Beat_GANs.md) · [[P3_HF_Diffusion_Course]](./Paper/P3_HF_Diffusion_Course.md)
 > **目標：Claude Code 可直接照此實作，不需再查論文**
 
 ---
@@ -443,6 +443,6 @@ def evaluate(model, test_json, obj_json, noise_scheduler,
 
 ## 參考
 
-- [[P1_DDPM]]：$L_\text{simple}$、DDPM algorithm、EMA=0.9999、linear schedule
-- [[P2_Beat_GANs]]：AdaGN、Classifier Guidance Algorithm 2、guidance scale 效果
-- [[P3_HF_Diffusion_Course]]：`DDPMScheduler`/`DDIMScheduler` API、完整訓練 loop
+- [[P1_DDPM]](./Paper/P1_DDPM.md)：$L_\text{simple}$、DDPM algorithm、EMA=0.9999、linear schedule
+- [[P2_Beat_GANs]](./Paper/P2_Beat_GANs.md)：AdaGN、Classifier Guidance Algorithm 2、guidance scale 效果
+- [[P3_HF_Diffusion_Course]](./Paper/P3_HF_Diffusion_Course.md)：`DDPMScheduler`/`DDIMScheduler` API、完整訓練 loop

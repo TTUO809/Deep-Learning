@@ -1,6 +1,6 @@
 # Model Architecture
 
-> 綜合來源：[[P1_DDPM]] · [[P2_Beat_GANs]] · [[P3_HF_Diffusion_Course]]  
+> 綜合來源：[[P1_DDPM]](./Paper/P1_DDPM.md) · [[P2_Beat_GANs]](./Paper/P2_Beat_GANs.md) · [[P3_HF_Diffusion_Course]](./Paper/P3_HF_Diffusion_Course.md)
 > **目標**：64×64 RGB，conditional DDPM，條件為 24-dim multi-label one-hot
 
 ---
@@ -317,6 +317,6 @@ class CondUNetDiffusers(nn.Module):
 
 ## 參考
 
-- [[P1_DDPM]]：UNet + GroupNorm + Sinusoidal time embedding
-- [[P2_Beat_GANs]]：AdaGN、multi-res attention、BigGAN up/down
-- [[P3_HF_Diffusion_Course]]：Diffusers API、channel concat conditioning 實作
+- [[P1_DDPM]](./Paper/P1_DDPM.md)：UNet + GroupNorm + Sinusoidal time embedding
+- [[P2_Beat_GANs]](./Paper/P2_Beat_GANs.md)：AdaGN、multi-res attention、BigGAN up/down
+- [[P3_HF_Diffusion_Course]](./Paper/P3_HF_Diffusion_Course.md)：Diffusers API、channel concat conditioning 實作

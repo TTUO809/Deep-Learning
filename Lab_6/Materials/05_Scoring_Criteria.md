@@ -35,7 +35,7 @@
 > Extra discussion 佔比最高（15%），建議嘗試多種設定並比較
 
 > Denoising process 參考範例
-> ![[Pasted image 20260506185145.png]]
+> ![Pasted image 20260506185145.png](./Images/Pasted_image_20260506185145.png)
 
 ---
 
@@ -55,7 +55,7 @@
 |< 0.4|0%|
 
 > 目標：accuracy ≥ 0.8（滿分），參考範例 new_test.json 達到 F1-score 0.821
-> ![[Pasted image 20260506145859.png]]
+> ![Pasted image 20260506145859.png](./Images/Pasted_image_20260506145859.png)
 
 ### 需提供
 
