@@ -36,7 +36,8 @@ Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/
 !Lab_5/Report/figures/*.png
 !Lab_5/LAB5_B11107122_凃岳霖/*.pt
 
-# --- Lab 6 ---
+# --- Lab 6: Conditional DDPM (iCLEVR) ---
+# Re-include reference images in Materials and report figures
 !/Lab_6/Materials/Images/*.png
 !Lab_6/Report/figures/*.png
 
@@ -68,5 +69,6 @@ __pycache__/
 *.synctex.gz
 *.toc
 
-# Exclude final compiled PDF (Can be regenerated from .tex source)
+# Exclude compiled PDFs (regenerated from .tex source)
 main.pdf
+report.pdf
