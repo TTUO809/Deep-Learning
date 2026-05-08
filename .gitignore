@@ -36,6 +36,10 @@ Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/
 !Lab_5/Report/figures/*.png
 !Lab_5/LAB5_B11107122_凃岳霖/*.pt
 
+# --- Lab 6 ---
+!/Lab_6/Materials/Images/*.png
+!Lab_6/Report/figures/*.png
+
 # =================================================================
 # System, IDE, and Environment Artifacts
 # =================================================================
