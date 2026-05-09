@@ -37,7 +37,12 @@ Lab_2/DL_Lab2_B11107122_凃岳霖/dataset/oxford-iiit-pet/
 !Lab_5/LAB5_B11107122_凃岳霖/*.pt
 
 # --- Lab 6: Conditional DDPM (iCLEVR) ---
-# Re-include reference images in Materials and report figures
+# Exclude entire checkpoints dir (*.pt already globally excluded); re-include only train_log.csv
+Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/
+!/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/train_log.csv
+# Re-include generated samples, training log, and report figures
+!/Lab_6/DL_LAB6_B11107122_凃岳霖/results/*.png
+!/Lab_6/DL_LAB6_B11107122_凃岳霖/notrain_all.log
 !/Lab_6/Materials/Images/*.png
 !Lab_6/Report/figures/*.png
 
@@ -71,4 +76,3 @@ __pycache__/
 
 # Exclude compiled PDFs (regenerated from .tex source)
 main.pdf
-report.pdf
