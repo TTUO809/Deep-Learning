@@ -21,9 +21,9 @@
 
 ## 繳交格式
 
-- [ ] 實驗報告 `.pdf`
-- [ ] Source code `.py`
-- [ ] Images 資料夾（結構如下）
+- [x] 實驗報告 `.pdf`
+- [x] Source code `.py`
+- [x] Images 資料夾（結構如下）
 
 ```
 images/

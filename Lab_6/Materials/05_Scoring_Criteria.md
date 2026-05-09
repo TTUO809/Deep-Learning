@@ -59,5 +59,5 @@
 
 ### 需提供
 
-- [ ] `test.json` accuracy 截圖
-- [ ] `new_test.json` accuracy 截圖
+- [x] `test.json` accuracy 截圖
+- [x] `new_test.json` accuracy 截圖

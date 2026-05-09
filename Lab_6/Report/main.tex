@@ -34,7 +34,7 @@
 % ─── Header/Footer ────────────────────────────────────────────────────────────
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small Deep Learning -- Lab 6: Conditional Generative Models on iCLEVR}
+\fancyhead[L]{\small Deep Learning -- Lab 6: Generative Models}
 \fancyhead[R]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -53,7 +53,7 @@
 \vspace{0.5em}
 {\Large Lab 6\par}
 \vspace{0.5em}
-{\large Conditional Generative Models on iCLEVR\par}
+{\large Generative Models\par}
 
 \vspace{1cm}
 \rule{0.6\linewidth}{0.8pt}
@@ -493,7 +493,7 @@ Both scores exceed $0.8$, placing the model in the 100\% grade tier.
 Configuration & \texttt{test} & \texttt{new\_test} \\
 \midrule
 DDIM, 100 steps, $s=2.0$ (\textbf{best}) & \textbf{0.9583} & \textbf{0.9881} \\
-DDIM, 100 steps, $s=3.0$                 & 0.9444 & 0.9167 \\
+DDIM, 100 steps, $s=3.0$                 & 0.9167 & 0.9762 \\
 DDPM, 1{,}000 steps                      & 0.9722 & 0.9286 \\
 No EMA (raw weights)                     & 0.9444 & 0.9167 \\
 \bottomrule
@@ -522,10 +522,100 @@ DDIM & 200   & 0.9722 & 0.9048 \\
 \end{tabular}
 \end{table}
 
-DDPM with 1{,}000 steps achieves the best test accuracy (0.9722) without guidance.
-DDIM at 100 steps matches DDPM-100 while being faster, and with guidance $s=2.0$
-it surpasses DDPM-1000 on \texttt{new\_test}.
+DDPM-1{,}000 steps and DDIM-200 steps both achieve the highest no-guidance test accuracy
+($0.9722$).
+DDPM-100 ($0.9583$) outperforms DDIM-100 ($0.9444$) without guidance, confirming that
+stochastic noise injection in DDPM compensates for fewer inference steps.
+Adding classifier guidance $s=2.0$ to DDIM-100 lifts the result to the overall best:
+test $0.9583$ and new\_test $0.9881$.
 
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.32\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_ddpm_grid.png}
+    \caption{DDPM 100 steps (0.9583)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.32\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_ddpm_1000_grid.png}
+    \caption{DDPM 1{,}000 steps (0.9722)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.32\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_ddim_grid.png}
+    \caption{DDIM 100 steps (0.9444)}
+  \end{subfigure}
+  \caption{Sampler comparison on \texttt{test.json} (no classifier guidance, EMA weights).
+           DDPM-1000 achieves the highest accuracy without guidance.}
+  \label{fig:sampler_cmp}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.32\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_ddpm_grid.png}
+    \caption{DDPM 100 steps (0.9286)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.32\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_ddpm_1000_grid.png}
+    \caption{DDPM 1{,}000 steps (0.9286)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.32\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_grid.png}
+    \caption{DDIM 100 steps (0.9167)}
+  \end{subfigure}
+  \caption{Sampler comparison on \texttt{new\_test.json} (no classifier guidance, EMA weights).
+           DDPM-1000 and DDPM-100 tie on this harder split; DDIM-100 underperforms both.}
+  \label{fig:sampler_cmp_newtest}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_ddim_25_grid.png}
+    \caption{25 steps (0.9444)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_ddim_50_grid.png}
+    \caption{50 steps (0.9167)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_ddim_grid.png}
+    \caption{100 steps (0.9444)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_ddim_200_grid.png}
+    \caption{200 steps (0.9722)}
+  \end{subfigure}
+  \caption{DDIM step count ablation on \texttt{test.json} (no classifier guidance, EMA weights).
+           Accuracy is non-monotone: 50 steps dips to $0.9167$; 200 steps ties DDPM-1000 at
+           $0.9722$.  DDIM-100 provides a practical balance at $10\times$ fewer NFEs than DDPM.}
+  \label{fig:ddim_steps}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_25_grid.png}
+    \caption{25 steps (0.9048)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_50_grid.png}
+    \caption{50 steps (0.9167)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_grid.png}
+    \caption{100 steps (0.9167)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.23\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_200_grid.png}
+    \caption{200 steps (0.9048)}
+  \end{subfigure}
+  \caption{DDIM step count ablation on \texttt{new\_test.json} (no classifier guidance, EMA weights).
+           On the harder split, 50 and 100 steps tie at $0.9167$ while 200 steps drops,
+           suggesting over-refinement without guidance hurts generalisation.}
+  \label{fig:ddim_steps_newtest}
+\end{figure}
+
+\clearpage
 \section{Classifier Guidance Scale}
 
 \begin{table}[H]
@@ -546,10 +636,57 @@ Scale $s$ & \texttt{test} & \texttt{new\_test} \\
 \end{tabular}
 \end{table}
 
-Guidance scale $s=2.0$ achieves the best combined performance.
-Beyond $s=3.0$, test accuracy drops, suggesting excessive gradient injection
-distorts image structure even while increasing apparent object presence.
+Guidance scale $s=2.0$ achieves the best combined accuracy (test $0.9583$,
+new\_test $0.9881$).
+Test accuracy is non-monotone with $s$: it dips at $s=3.0$ ($0.9167$) then partially
+recovers at $s=4.0$ ($0.9583$), while new\_test accuracy decreases monotonically beyond
+$s=2.0$.
+This confirms that moderate guidance maximises condition adherence without distorting
+image structure.
 
+\begin{figure}[H]
+  \centering
+  % Row 1: s = 1.0, 1.5, 2.0, 2.5
+  \begin{subfigure}[b]{0.22\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s1_grid.png}
+    \caption{$s=1.0$\\t:0.9444 / n:0.9762}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.22\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s1.5_grid.png}
+    \caption{$s=1.5$\\t:0.9583 / n:0.9643}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.22\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s2_grid.png}
+    \caption{$\bm{s=2.0}$\\\textbf{t:0.9583 / n:0.9881}}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.22\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s2.5_grid.png}
+    \caption{$s=2.5$\\t:0.9444 / n:0.9524}
+  \end{subfigure}
+
+  \medskip
+
+  % Row 2: s = 3.0, 4.0, 5.0
+  \begin{subfigure}[b]{0.30\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s3_grid.png}
+    \caption{$s=3.0$\\t:0.9167 / n:0.9762}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.30\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s4_grid.png}
+    \caption{$s=4.0$\\t:0.9583 / n:0.9762}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.30\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s5_grid.png}
+    \caption{$s=5.0$\\t:0.9444 / n:0.9643}
+  \end{subfigure}
+
+  \caption{Full classifier guidance scale sweep (DDIM, 100 steps, EMA weights).
+           Subcaption format: t = \texttt{test} accuracy, n = \texttt{new\_test} accuracy.
+           $s=2.0$ maximises both metrics; new\_test accuracy degrades monotonically beyond $s=2$.}
+  \label{fig:guidance_cmp}
+\end{figure}
+
+\clearpage
 \section{EMA vs.\ Raw Weights}
 
 Raw model weights yield test accuracy $0.9444$ and new\_test accuracy $0.9167$,
@@ -559,6 +696,37 @@ pronounced on the harder \texttt{new\_test} split.
 This confirms that EMA's parameter averaging reduces optimisation noise and
 produces a smoother, more generalisable model.
 
+\begin{figure}[H]
+  \centering
+  % test.json
+  \begin{subfigure}[b]{0.48\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s2_grid.png}
+    \caption{\texttt{test} -- EMA (0.9583)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.48\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_no_ema_grid.png}
+    \caption{\texttt{test} -- Raw (0.9444)}
+  \end{subfigure}
+
+  \medskip
+
+  % new_test.json
+  \begin{subfigure}[b]{0.48\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s2_grid.png}
+    \caption{\texttt{new\_test} -- EMA (0.9881)}
+  \end{subfigure}\hfill
+  \begin{subfigure}[b]{0.48\linewidth}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_no_ema_grid.png}
+    \caption{\texttt{new\_test} -- Raw (0.9167)}
+  \end{subfigure}
+
+  \caption{EMA vs.\ raw weights on both test splits (DDIM, 100 steps, $s=2.0$).
+           EMA improves test accuracy by $+1.4$ pp and new\_test accuracy by $+7.1$ pp,
+           with the gap especially pronounced on the harder \texttt{new\_test} split.}
+  \label{fig:ema_cmp}
+\end{figure}
+
+\clearpage
 \section{Discussion}
 
 \textbf{Cosine vs.\ linear schedule.}

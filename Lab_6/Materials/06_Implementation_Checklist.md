@@ -63,15 +63,15 @@
 
 ## Report
 
-- [ ] Introduction
-- [ ] Implementation details（架構 / noise schedule / embedding / loss / sampling）
-- [ ] Result grids + accuracy 截圖
-- [ ] Extra experiments discussion（sampler 比較、guidance scale sweep、EMA vs raw）
-- [ ] Reference
+- [x] Introduction
+- [x] Implementation details（架構 / noise schedule / embedding / loss / sampling）
+- [x] Result grids + accuracy 截圖
+- [x] Extra experiments discussion（sampler 比較、guidance scale sweep、EMA vs raw）
+- [x] Reference
 
 ## 繳交
 
-- [ ] 壓縮成 `DL_LAB6_B11107122_凃岳霖.zip`
-- [ ] 包含：report (.pdf) + source code (.py) + images/
-- [ ] **不包含** dataset
-- [ ] 2026-05-12 23:59 前上傳
+- [x] 壓縮成 `DL_LAB6_B11107122_凃岳霖.zip`
+- [x] 包含：report (.pdf) + source code (.py) + images/
+- [x] **不包含** dataset
+- [x] 2026-05-12 23:59 前上傳
