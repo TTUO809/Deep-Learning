@@ -9,7 +9,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_grid.png
 [new_test] accuracy = 0.9643
 
-==[ new_test ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 1.0 ]==
 ====== SUMMARY ======
         test: 0.9861
     new_test: 0.9643
@@ -29,7 +29,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddpm/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddpm_grid.png
 [new_test] accuracy = 0.9286
 
-==[ new_test_ddpm ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddpm --steps 100 --tag 'ddpm' ]==
 ====== SUMMARY ======
         test: 0.9583
     new_test: 0.9286
@@ -43,7 +43,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_grid.png
 [new_test] accuracy = 0.9167
 
-==[ new_test_ddim ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim --steps 100 --tag 'ddim' ]==
 ====== SUMMARY ======
         test: 0.9444
     new_test: 0.9167
@@ -57,7 +57,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddpm_1000/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddpm_1000_grid.png
 [new_test] accuracy = 0.9286
 
-==[ new_test_ddpm_1000 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddpm --steps 1000 --tag 'ddpm_1000' ]==
 ====== SUMMARY ======
         test: 0.9722
     new_test: 0.9286
@@ -71,7 +71,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim_25/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_25_grid.png
 [new_test] accuracy = 0.9048
 
-==[ new_test_ddim_25 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim --steps 25 --tag 'ddim_25' ]==
 ====== SUMMARY ======
         test: 0.9444
     new_test: 0.9048
@@ -85,7 +85,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim_50/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_50_grid.png
 [new_test] accuracy = 0.9167
 
-==[ new_test_ddim_50 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim --steps 50 --tag 'ddim_50' ]==
 ====== SUMMARY ======
         test: 0.9167
     new_test: 0.9167
@@ -99,7 +99,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim_200/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_200_grid.png
 [new_test] accuracy = 0.9048
 
-==[ new_test_ddim_200 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim --steps 200 --tag 'ddim_200' ]==
 ====== SUMMARY ======
         test: 0.9722
     new_test: 0.9048
@@ -113,7 +113,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s1/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s1_grid.png
 [new_test] accuracy = 0.9643
 
-==[ new_test_guided_s1 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 1.0 --tag 'guided_s1' ]==
 ====== SUMMARY ======
         test: 0.9861
     new_test: 0.9643
@@ -127,7 +127,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s2/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s2_grid.png
 [new_test] accuracy = 0.9524
 
-==[ new_test_guided_s2 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 2.0 --tag 'guided_s2' ]==
 ====== SUMMARY ======
         test: 0.9861
     new_test: 0.9524
@@ -141,7 +141,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s3/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s3_grid.png
 [new_test] accuracy = 0.9524
 
-==[ new_test_guided_s3 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 3.0 --tag 'guided_s3' ]==
 ====== SUMMARY ======
         test: 0.9722
     new_test: 0.9524
@@ -155,7 +155,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s4/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s4_grid.png
 [new_test] accuracy = 0.9643
 
-==[ new_test_guided_s4 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 4.0 --tag 'guided_s4' ]==
 ====== SUMMARY ======
         test: 0.9306
     new_test: 0.9643
@@ -169,7 +169,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s5/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s5_grid.png
 [new_test] accuracy = 0.9643
 
-==[ new_test_guided_s5 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 5.0 --tag 'guided_s5' ]==
 ====== SUMMARY ======
         test: 0.9583
     new_test: 0.9643
@@ -183,7 +183,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s1.5/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s1.5_grid.png
 [new_test] accuracy = 0.9286
 
-==[ new_test_guided_s1.5 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 1.5 --tag 'guided_s1.5' ]==
 ====== SUMMARY ======
         test: 0.9583
     new_test: 0.9286
@@ -197,7 +197,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s2.5/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s2.5_grid.png
 [new_test] accuracy = 0.9643
 
-==[ new_test_guided_s2.5 ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim_guided --steps 100 --guidance_scale 2.5 --tag 'guided_s2.5' ]==
 ====== SUMMARY ======
         test: 0.9444
     new_test: 0.9643
@@ -211,7 +211,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_no_ema/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_no_ema_grid.png
 [new_test] accuracy = 0.9167
 
-==[ new_test_no_ema ]==
+==[ python evaluate.py --ckpt /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/checkpoints/last.pt --sampler ddim --steps 100 --tag 'no_ema' ]==
 ====== SUMMARY ======
         test: 0.9444
     new_test: 0.9167

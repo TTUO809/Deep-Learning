@@ -201,9 +201,13 @@ def main():
         summary[split_name] = acc
 
     # 9. 印出最終評估報表。
-    tag_suffix = f"_{args.tag}" if args.tag else ""
-    label = splits[-1][0] + tag_suffix
-    print(f"\n==[ {label} ]==")
+    cmd_parts = ["python evaluate.py", f"--ckpt {args.ckpt}", f"--sampler {args.sampler}",
+                 f"--steps {args.steps}"]
+    if args.sampler == "ddim_guided":
+        cmd_parts.append(f"--guidance_scale {args.guidance_scale}")
+    if args.tag:
+        cmd_parts.append(f"--tag {args.tag!r}")
+    print(f"\n==[ {' '.join(cmd_parts)} ]==")
     print("====== SUMMARY ======")
     for k, v in summary.items():
         print(f"  {k:>10s}: {v:.4f}")
