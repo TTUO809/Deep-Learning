@@ -6,14 +6,12 @@ Dataset: iCLEVR (~18k training images).
 
 ## Results
 
-| Split    | Sampler              | Accuracy |
-|----------|----------------------|----------|
-| test     | DDIM 100 + guidance  | **94.44%** |
-| new_test | DDIM 100 + guidance  | **91.67%** |
-| test     | DDPM 1000 steps      | 97.22%   |
-| new_test | DDPM 1000 steps      | 92.86%   |
-
-Best guidance scale (new_test): s=2.0 → 98.81%
+| Split    | Sampler                      | Accuracy |
+|----------|------------------------------|----------|
+| test     | DDIM 100 + guidance (s=1.0)  | **98.61%** |
+| new_test | DDIM 100 + guidance (s=1.0)  | **96.43%** |
+| test     | DDPM 1000 steps              | 97.22%   |
+| new_test | DDPM 1000 steps              | 92.86%   |
 
 ## Directory Structure
 
@@ -36,7 +34,7 @@ Lab_6/
 │   └── run.sh                 # full pipeline orchestration
 ├── Materials/                 # course reference material
 └── Report/
-    └── report.pdf
+    └── main.tex
 ```
 
 ## Environment
@@ -58,7 +56,7 @@ python train.py --epochs 200 --batch_size 64 --amp
 
 # Evaluate — generate images + accuracy
 python evaluate.py --ckpt ../checkpoints/last.pt \
-    --sampler ddim_guided --steps 100 --guidance_scale 3.0
+    --sampler ddim_guided --steps 100 --guidance_scale 1.0
 
 # Denoising visualization
 python denoise_process.py --ckpt ../checkpoints/last.pt \
@@ -77,4 +75,4 @@ cd DL_LAB6_B11107122_凃岳霖 && bash run.sh
 - **Training**: AdamW lr=2e-4, cosine LR decay, EMA decay=0.9999, 200 epochs
 - **Sampling**: DDIM (100 steps) + classifier guidance from provided ResNet18 evaluator
 
-Full implementation details are in [Report/report.pdf](Report/report.pdf).
+Full implementation details are in [DL_LAB6_B11107122_凃岳霖/LAB6_B11107122_Report.pdf](DL_LAB6_B11107122_凃岳霖/LAB6_B11107122_Report.pdf).

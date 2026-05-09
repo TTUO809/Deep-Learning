@@ -240,19 +240,25 @@ def ddim_guided_sample(model, labels: torch.Tensor, ddim_scheduler,
         #    並針對目標標籤計算出 BCE 損失的梯度。
         grad = guided.get_grad(x0_hat, labels, img_size=img_size)
 
-        # 10. 直接在 x0 像素空間進行引導！
+        # 10. 對每張圖片進行梯度 Norm Clipping：多物體圖片的 BCE(sum) 梯度比單物體大 N 倍，
+        #     若不限制會過度推動 x0_guided 飽和至 ±1 造成雪花屏。
+        #     只在 norm > 1.0 時才縮放（保留小梯度的自然強度，避免放大雜訊）。
+        B_cur = grad.shape[0]
+        grad_norm = grad.view(B_cur, -1).norm(dim=1).view(B_cur, 1, 1, 1).clamp(min=1e-8)
+        grad = grad * (1.0 / grad_norm).clamp(max=1.0)  # clip to max norm=1.0, never amplify
+
+        # 11. 直接在 x0 像素空間進行引導！
         #     目標是讓 Loss (BCE) 變小，所以是「減去」梯度方向乘以 guidance_scale (引導強度)。
         x0_guided = x0_hat - guidance_scale * grad
         
-        # 11. 【終極防護網】確保引導後的像素值絕對不會超出 [-1, 1] 的物理極限。
-        #     這一行直接免疫了所有的「數值爆炸」與「梯度過載」問題，保證生成穩定性。
+        # 12. 【終極防護網】確保引導後的像素值絕對不會超出 [-1, 1] 的物理極限。
         x0_guided = x0_guided.clamp(-1.0, 1.0)
 
-        # 12. 逆向推導：將引導完畢的乾淨圖片，安全地反推回當前步驟需要的等效雜訊 eps_hat。
+        # 13. 逆向推導：將引導完畢的乾淨圖片，安全地反推回當前步驟需要的等效雜訊 eps_hat。
         #     這使得後續的 DDIM 更新能吃到被修正過的方向。
         eps_hat = (x - sqrt_alpha_t * x0_guided) / sqrt_1m
         
-        # 13. 正常往下走：使用被梯度干涉過的 eps_hat 執行標準 DDIM 演算法更新至 t-1 狀態。
+        # 14. 正常往下走：使用被梯度干涉過的 eps_hat 執行標準 DDIM 演算法更新至 t-1 狀態。
         x = ddim_scheduler.step(eps_hat, t, x).prev_sample
 
     return x

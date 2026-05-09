@@ -1,17 +1,18 @@
 [run.sh] Skipping train.
 
-[run.sh] Evaluating best checkpoint with DDIM...
+[run.sh] Evaluating best checkpoint with DDIM + classifier guidance (s=1.0)...
 [ckpt] loaded EMA weights
 [test] generating 32 images ...
 [test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/test/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/test_grid.png
-[test] accuracy = 0.9444
+[test] accuracy = 0.9861
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_grid.png
-[new_test] accuracy = 0.9167
+[new_test] accuracy = 0.9643
 
+==[ new_test ]==
 ====== SUMMARY ======
-        test: 0.9444
-    new_test: 0.9167
+        test: 0.9861
+    new_test: 0.9643
 =====================
 
 
@@ -28,6 +29,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddpm/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddpm_grid.png
 [new_test] accuracy = 0.9286
 
+==[ new_test_ddpm ]==
 ====== SUMMARY ======
         test: 0.9583
     new_test: 0.9286
@@ -41,6 +43,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_grid.png
 [new_test] accuracy = 0.9167
 
+==[ new_test_ddim ]==
 ====== SUMMARY ======
         test: 0.9444
     new_test: 0.9167
@@ -54,6 +57,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddpm_1000/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddpm_1000_grid.png
 [new_test] accuracy = 0.9286
 
+==[ new_test_ddpm_1000 ]==
 ====== SUMMARY ======
         test: 0.9722
     new_test: 0.9286
@@ -67,6 +71,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim_25/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_25_grid.png
 [new_test] accuracy = 0.9048
 
+==[ new_test_ddim_25 ]==
 ====== SUMMARY ======
         test: 0.9444
     new_test: 0.9048
@@ -80,6 +85,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim_50/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_50_grid.png
 [new_test] accuracy = 0.9167
 
+==[ new_test_ddim_50 ]==
 ====== SUMMARY ======
         test: 0.9167
     new_test: 0.9167
@@ -93,6 +99,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_ddim_200/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_ddim_200_grid.png
 [new_test] accuracy = 0.9048
 
+==[ new_test_ddim_200 ]==
 ====== SUMMARY ======
         test: 0.9722
     new_test: 0.9048
@@ -101,65 +108,70 @@
 [ckpt] loaded EMA weights
 [test] generating 32 images ...
 [test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/test_guided_s1/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/test_guided_s1_grid.png
-[test] accuracy = 0.9444
+[test] accuracy = 0.9861
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s1/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s1_grid.png
-[new_test] accuracy = 0.9762
+[new_test] accuracy = 0.9643
 
+==[ new_test_guided_s1 ]==
 ====== SUMMARY ======
-        test: 0.9444
-    new_test: 0.9762
+        test: 0.9861
+    new_test: 0.9643
 =====================
 
 [ckpt] loaded EMA weights
 [test] generating 32 images ...
 [test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/test_guided_s2/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/test_guided_s2_grid.png
-[test] accuracy = 0.9583
+[test] accuracy = 0.9861
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s2/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s2_grid.png
-[new_test] accuracy = 0.9881
+[new_test] accuracy = 0.9524
 
+==[ new_test_guided_s2 ]==
 ====== SUMMARY ======
-        test: 0.9583
-    new_test: 0.9881
+        test: 0.9861
+    new_test: 0.9524
 =====================
 
 [ckpt] loaded EMA weights
 [test] generating 32 images ...
 [test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/test_guided_s3/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/test_guided_s3_grid.png
-[test] accuracy = 0.9167
+[test] accuracy = 0.9722
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s3/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s3_grid.png
-[new_test] accuracy = 0.9762
+[new_test] accuracy = 0.9524
 
+==[ new_test_guided_s3 ]==
 ====== SUMMARY ======
-        test: 0.9167
-    new_test: 0.9762
+        test: 0.9722
+    new_test: 0.9524
 =====================
 
 [ckpt] loaded EMA weights
 [test] generating 32 images ...
 [test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/test_guided_s4/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/test_guided_s4_grid.png
-[test] accuracy = 0.9583
+[test] accuracy = 0.9306
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s4/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s4_grid.png
-[new_test] accuracy = 0.9762
+[new_test] accuracy = 0.9643
 
+==[ new_test_guided_s4 ]==
 ====== SUMMARY ======
-        test: 0.9583
-    new_test: 0.9762
+        test: 0.9306
+    new_test: 0.9643
 =====================
 
 [ckpt] loaded EMA weights
 [test] generating 32 images ...
 [test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/test_guided_s5/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/test_guided_s5_grid.png
-[test] accuracy = 0.9444
+[test] accuracy = 0.9583
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s5/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s5_grid.png
 [new_test] accuracy = 0.9643
 
+==[ new_test_guided_s5 ]==
 ====== SUMMARY ======
-        test: 0.9444
+        test: 0.9583
     new_test: 0.9643
 =====================
 
@@ -169,11 +181,12 @@
 [test] accuracy = 0.9583
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s1.5/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s1.5_grid.png
-[new_test] accuracy = 0.9643
+[new_test] accuracy = 0.9286
 
+==[ new_test_guided_s1.5 ]==
 ====== SUMMARY ======
         test: 0.9583
-    new_test: 0.9643
+    new_test: 0.9286
 =====================
 
 [ckpt] loaded EMA weights
@@ -182,11 +195,12 @@
 [test] accuracy = 0.9444
 [new_test] generating 32 images ...
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_guided_s2.5/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s2.5_grid.png
-[new_test] accuracy = 0.9524
+[new_test] accuracy = 0.9643
 
+==[ new_test_guided_s2.5 ]==
 ====== SUMMARY ======
         test: 0.9444
-    new_test: 0.9524
+    new_test: 0.9643
 =====================
 
 [ckpt] loaded raw model weights
@@ -197,6 +211,7 @@
 [new_test] saved -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/images/new_test_no_ema/ , grid -> /home/c_1006/DL/Lab_6/DL_LAB6_B11107122_凃岳霖/results/new_test_no_ema_grid.png
 [new_test] accuracy = 0.9167
 
+==[ new_test_no_ema ]==
 ====== SUMMARY ======
         test: 0.9444
     new_test: 0.9167

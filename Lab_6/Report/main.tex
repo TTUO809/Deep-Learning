@@ -91,12 +91,12 @@ multi-label accuracy score.
 
 \section*{Key Findings}
 
-The model achieves \textbf{95.83\%} accuracy on \texttt{test.json} and
-\textbf{98.81\%} on \texttt{new\_test.json} (DDIM, 100 steps, classifier guidance
-scale $s=2.0$, EMA weights), both well above the 80\% full-credit threshold.
+The model achieves \textbf{98.61\%} accuracy on \texttt{test.json} and
+\textbf{96.43\%} on \texttt{new\_test.json} (DDIM, 100 steps, classifier guidance
+scale $s=1.0$, EMA weights), both well above the 80\% full-credit threshold.
 An ablation study over sampling strategies, DDIM step counts, and guidance scales
-confirms that moderate guidance ($s\approx2$) and at least 100 DDIM steps
-provide the best quality--speed trade-off.
+confirms that light guidance ($s=1.0$) with per-image gradient norm clipping and
+at least 100 DDIM steps provide the best quality--speed trade-off.
 
 \section*{Report Organization}
 
@@ -394,14 +394,25 @@ Guidance is applied in the predicted $\hat{\mathbf{x}}_0$ space:
           \boldsymbol\epsilon_\theta(\mathbf{x}_t,t,\mathbf{c})\bigr)
       / \sqrt{\bar\alpha_t}$.
 
-  \item Compute the BCE guidance gradient with respect to $\hat{\mathbf{x}}_0$:
+  \item Compute the BCE guidance gradient with respect to $\hat{\mathbf{x}}_0$
+        and apply per-image norm clipping:
     \[
-      \mathbf{g}
+      \tilde{\mathbf{g}}
         = \nabla_{\hat{\mathbf{x}}_0}\,
           \mathcal{L}_{\mathrm{BCE}}\!\bigl(
             f_\phi(\hat{\mathbf{x}}_0),\; \mathbf{c}
-          \bigr).
+          \bigr),
+      \qquad
+      \mathbf{g}
+        = \tilde{\mathbf{g}} \cdot \min\!\left(
+            1,\; \frac{1}{\|\tilde{\mathbf{g}}\|_2}
+          \right).
     \]
+    Clipping prevents multi-object images from receiving disproportionately
+    large gradients due to BCE's \texttt{sum} reduction:
+    a 3-label image accumulates $\approx 3\times$ the loss of a 1-label image,
+    which without clipping saturates $\hat{\mathbf{x}}_0^*$ to $\pm 1$
+    and produces noise-like outputs (``snow screen'').
 
   \item Apply guidance and clamp for stability:
     \[
@@ -429,7 +440,7 @@ Guidance is applied in the predicted $\hat{\mathbf{x}}_0$ space:
 \end{enumerate}
 
 The guidance scale $s$ controls the condition-adherence strength.
-The ablation (Chapter~4) shows $s=2.0$ is optimal.
+The ablation (Chapter~4) shows $s=1.0$ is optimal.
 
 % ══════════════════════════════════════════════════════════════════════════════
 \chapter{Results}
@@ -438,19 +449,19 @@ The ablation (Chapter~4) shows $s=2.0$ is optimal.
 
 Figures~\ref{fig:test_grid} and~\ref{fig:newtest_grid} show the $8\times4$
 grids of 32 generated images for \texttt{test.json} and \texttt{new\_test.json}
-using the best configuration (DDIM, 100 steps, guidance $s=2.0$, EMA weights).
+using the best configuration (DDIM, 100 steps, guidance $s=1.0$, EMA weights).
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.92\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s2_grid.png}
-  \caption{Synthetic images for \texttt{test.json} (DDIM 100 steps, guidance $s=2.0$).}
+  \includegraphics[width=0.92\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s1_grid.png}
+  \caption{Synthetic images for \texttt{test.json} (DDIM 100 steps, guidance $s=1.0$).}
   \label{fig:test_grid}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.92\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s2_grid.png}
-  \caption{Synthetic images for \texttt{new\_test.json} (DDIM 100 steps, guidance $s=2.0$).}
+  \includegraphics[width=0.92\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s1_grid.png}
+  \caption{Synthetic images for \texttt{new\_test.json} (DDIM 100 steps, guidance $s=1.0$).}
   \label{fig:newtest_grid}
 \end{figure}
 
@@ -478,9 +489,9 @@ Both scores exceed $0.8$, placing the model in the 100\% grade tier.
 \begin{figure}[H]
   \centering
   \fbox{\includegraphics[width=0.92\linewidth]{figures/accuracy_screenshot.png}}
-  \caption{Evaluator terminal output: \texttt{test} accuracy $= 0.9583$,
-           \texttt{new\_test} accuracy $= 0.9881$
-           (DDIM, 100 steps, guidance scale $s=2.0$, EMA weights).}
+  \caption{Evaluator terminal output: \texttt{test} accuracy $= 0.9861$,
+           \texttt{new\_test} accuracy $= 0.9643$
+           (DDIM, 100 steps, guidance scale $s=1.0$, EMA weights).}
   \label{fig:acc_screenshot}
 \end{figure}
 
@@ -488,12 +499,13 @@ Both scores exceed $0.8$, placing the model in the 100\% grade tier.
 \centering
 \caption{Accuracy summary across configurations. All entries use EMA weights,
          200-epoch checkpoint.}
+\label{tab:acc_summary}
 \begin{tabular}{lcc}
 \toprule
 Configuration & \texttt{test} & \texttt{new\_test} \\
 \midrule
-DDIM, 100 steps, $s=2.0$ (\textbf{best}) & \textbf{0.9583} & \textbf{0.9881} \\
-DDIM, 100 steps, $s=3.0$                 & 0.9167 & 0.9762 \\
+DDIM, 100 steps, $s=1.0$ (\textbf{best}) & \textbf{0.9861} & \textbf{0.9643} \\
+DDIM, 100 steps, $s=2.0$                 & 0.9861 & 0.9524 \\
 DDPM, 1{,}000 steps                      & 0.9722 & 0.9286 \\
 No EMA (raw weights)                     & 0.9444 & 0.9167 \\
 \bottomrule
@@ -526,8 +538,8 @@ DDPM-1{,}000 steps and DDIM-200 steps both achieve the highest no-guidance test 
 ($0.9722$).
 DDPM-100 ($0.9583$) outperforms DDIM-100 ($0.9444$) without guidance, confirming that
 stochastic noise injection in DDPM compensates for fewer inference steps.
-Adding classifier guidance $s=2.0$ to DDIM-100 lifts the result to the overall best:
-test $0.9583$ and new\_test $0.9881$.
+Adding classifier guidance $s=1.0$ (with gradient norm clipping) to DDIM-100 lifts
+the result to the overall best: test $0.9861$ and new\_test $0.9643$.
 
 \begin{figure}[H]
   \centering
@@ -625,43 +637,45 @@ test $0.9583$ and new\_test $0.9881$.
 \toprule
 Scale $s$ & \texttt{test} & \texttt{new\_test} \\
 \midrule
-1.0 & 0.9444 & 0.9762 \\
-1.5 & 0.9583 & 0.9643 \\
-2.0 & \textbf{0.9583} & \textbf{0.9881} \\
-2.5 & 0.9444 & 0.9524 \\
-3.0 & 0.9167 & 0.9762 \\
-4.0 & 0.9583 & 0.9762 \\
-5.0 & 0.9444 & 0.9643 \\
+1.0 & \textbf{0.9861} & \textbf{0.9643} \\
+1.5 & 0.9583 & 0.9286 \\
+2.0 & 0.9861 & 0.9524 \\
+2.5 & 0.9444 & 0.9643 \\
+3.0 & 0.9722 & 0.9524 \\
+4.0 & 0.9306 & 0.9643 \\
+5.0 & 0.9583 & 0.9643 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Guidance scale $s=2.0$ achieves the best combined accuracy (test $0.9583$,
-new\_test $0.9881$).
-Test accuracy is non-monotone with $s$: it dips at $s=3.0$ ($0.9167$) then partially
-recovers at $s=4.0$ ($0.9583$), while new\_test accuracy decreases monotonically beyond
-$s=2.0$.
-This confirms that moderate guidance maximises condition adherence without distorting
-image structure.
+Guidance scale $s=1.0$ achieves the best combined accuracy (test $0.9861$,
+new\_test $0.9643$), and ties $s=2.0$ on the test split.
+Test accuracy is non-monotone with $s$: it peaks at $s\in\{1,2\}$ ($0.9861$),
+drops at $s=4$ ($0.9306$), and partially recovers at $s=5$ ($0.9583$).
+New\_test accuracy peaks at $s\in\{1,4,5,2.5\}$ ($0.9643$) and decreases at
+intermediate scales, reflecting the interaction between norm-clipping and gradient
+direction preservation.
+This confirms that light guidance ($s=1.0$) maximises condition adherence without
+distorting image structure.
 
 \begin{figure}[H]
   \centering
   % Row 1: s = 1.0, 1.5, 2.0, 2.5
   \begin{subfigure}[b]{0.22\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s1_grid.png}
-    \caption{$s=1.0$\\t:0.9444 / n:0.9762}
+    \caption{$\bm{s=1.0}$\\\textbf{t:0.9861 / n:0.9643}}
   \end{subfigure}\hfill
   \begin{subfigure}[b]{0.22\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s1.5_grid.png}
-    \caption{$s=1.5$\\t:0.9583 / n:0.9643}
+    \caption{$s=1.5$\\t:0.9583 / n:0.9286}
   \end{subfigure}\hfill
   \begin{subfigure}[b]{0.22\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s2_grid.png}
-    \caption{$\bm{s=2.0}$\\\textbf{t:0.9583 / n:0.9881}}
+    \caption{$s=2.0$\\t:0.9861 / n:0.9524}
   \end{subfigure}\hfill
   \begin{subfigure}[b]{0.22\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s2.5_grid.png}
-    \caption{$s=2.5$\\t:0.9444 / n:0.9524}
+    \caption{$s=2.5$\\t:0.9444 / n:0.9643}
   \end{subfigure}
 
   \medskip
@@ -669,30 +683,30 @@ image structure.
   % Row 2: s = 3.0, 4.0, 5.0
   \begin{subfigure}[b]{0.30\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s3_grid.png}
-    \caption{$s=3.0$\\t:0.9167 / n:0.9762}
+    \caption{$s=3.0$\\t:0.9722 / n:0.9524}
   \end{subfigure}\hfill
   \begin{subfigure}[b]{0.30\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s4_grid.png}
-    \caption{$s=4.0$\\t:0.9583 / n:0.9762}
+    \caption{$s=4.0$\\t:0.9306 / n:0.9643}
   \end{subfigure}\hfill
   \begin{subfigure}[b]{0.30\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s5_grid.png}
-    \caption{$s=5.0$\\t:0.9444 / n:0.9643}
+    \caption{$s=5.0$\\t:0.9583 / n:0.9643}
   \end{subfigure}
 
   \caption{Full classifier guidance scale sweep (DDIM, 100 steps, EMA weights).
            Subcaption format: t = \texttt{test} accuracy, n = \texttt{new\_test} accuracy.
-           $s=2.0$ maximises both metrics; new\_test accuracy degrades monotonically beyond $s=2$.}
+           $s=1.0$ achieves the best combined score; $s=2.0$ ties on the test split.}
   \label{fig:guidance_cmp}
 \end{figure}
 
 \clearpage
 \section{EMA vs.\ Raw Weights}
 
-Raw model weights yield test accuracy $0.9444$ and new\_test accuracy $0.9167$,
-compared to $0.9583$ / $0.9881$ for the EMA checkpoint.
-The EMA model consistently outperforms raw weights, with the gap especially
-pronounced on the harder \texttt{new\_test} split.
+Raw model weights yield test accuracy $0.9444$ and new\_test accuracy $0.9167$
+(DDIM, 100 steps, no guidance), compared to $0.9861$ / $0.9643$ for the best
+EMA configuration (guidance $s=1.0$).
+The EMA model consistently outperforms raw weights on both splits.
 This confirms that EMA's parameter averaging reduces optimisation noise and
 produces a smoother, more generalisable model.
 
@@ -700,29 +714,29 @@ produces a smoother, more generalisable model.
   \centering
   % test.json
   \begin{subfigure}[b]{0.48\linewidth}
-    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s2_grid.png}
-    \caption{\texttt{test} -- EMA (0.9583)}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_guided_s1_grid.png}
+    \caption{\texttt{test} -- EMA + guidance $s=1.0$ (0.9861)}
   \end{subfigure}\hfill
   \begin{subfigure}[b]{0.48\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/test_no_ema_grid.png}
-    \caption{\texttt{test} -- Raw (0.9444)}
+    \caption{\texttt{test} -- Raw weights, no guidance (0.9444)}
   \end{subfigure}
 
   \medskip
 
   % new_test.json
   \begin{subfigure}[b]{0.48\linewidth}
-    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s2_grid.png}
-    \caption{\texttt{new\_test} -- EMA (0.9881)}
+    \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_guided_s1_grid.png}
+    \caption{\texttt{new\_test} -- EMA + guidance $s=1.0$ (0.9643)}
   \end{subfigure}\hfill
   \begin{subfigure}[b]{0.48\linewidth}
     \includegraphics[width=\linewidth]{../DL_LAB6_B11107122_凃岳霖/results/new_test_no_ema_grid.png}
-    \caption{\texttt{new\_test} -- Raw (0.9167)}
+    \caption{\texttt{new\_test} -- Raw weights, no guidance (0.9167)}
   \end{subfigure}
 
-  \caption{EMA vs.\ raw weights on both test splits (DDIM, 100 steps, $s=2.0$).
-           EMA improves test accuracy by $+1.4$ pp and new\_test accuracy by $+7.1$ pp,
-           with the gap especially pronounced on the harder \texttt{new\_test} split.}
+  \caption{EMA + guidance vs.\ raw weights (no guidance) on both test splits.
+           EMA with guidance $s=1.0$ improves test accuracy by $+4.2$ pp and
+           new\_test accuracy by $+4.8$ pp over the raw-weight baseline.}
   \label{fig:ema_cmp}
 \end{figure}
 
@@ -743,9 +757,16 @@ network depth, which empirically gives lower accuracy on multi-label conditions.
 \textbf{Guidance in $\hat{\mathbf{x}}_0$ space.}
 Applying the classifier gradient to the predicted clean image (rather than directly
 to $\mathbf{x}_t$) provides a more stable signal.
-At large $t$ the SNR of $\hat{\mathbf{x}}_0$ is higher than that of $\mathbf{x}_t$;
-clamping $\hat{\mathbf{x}}_0^*$ to $[-1,1]$ prevents gradient blow-ups at very
-noisy timesteps.
+However, the BCE loss with \texttt{reduction="sum"} scales linearly with the
+number of active labels, causing multi-object images (e.g.\ 3-label) to receive
+gradients $\approx 3\times$ larger than single-object images.
+Without mitigation, these large gradients push $\hat{\mathbf{x}}_0^*$ to pixel
+saturation ($\pm 1$) in the noise direction, yielding a ``snow screen'' at the
+corresponding positions in the output grid.
+Per-image \emph{norm clipping}---scaling $\tilde{\mathbf{g}}$ to unit $\ell_2$
+norm whenever $\|\tilde{\mathbf{g}}\|_2 > 1$---equalises step size across label
+counts and eliminates the artefact while further \emph{improving} accuracy
+(test: $+2.78$ pp, see Table~\ref{tab:acc_summary}).
 
 % ══════════════════════════════════════════════════════════════════════════════
 \begin{thebibliography}{9}

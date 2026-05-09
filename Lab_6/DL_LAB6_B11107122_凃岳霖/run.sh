@@ -85,11 +85,12 @@ fi
 # --------------- STEP 2: EVALUATE ---------------
 if [ "$DO_EVAL" = true ]; then
     echo ""
-    echo "[run.sh] Evaluating best checkpoint with DDIM..."
+    echo "[run.sh] Evaluating best checkpoint with DDIM + classifier guidance (s=1.0)..."
     python evaluate.py \
         --ckpt "$LAST_CKPT" \
-        --sampler ddim \
-        --steps 100
+        --sampler ddim_guided \
+        --steps 100 \
+        --guidance_scale 1.0
 else
     echo "[run.sh] Skipping eval."
 fi

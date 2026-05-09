@@ -201,7 +201,10 @@ def main():
         summary[split_name] = acc
 
     # 9. 印出最終評估報表。
-    print("\n====== SUMMARY ======")
+    tag_suffix = f"_{args.tag}" if args.tag else ""
+    label = splits[-1][0] + tag_suffix
+    print(f"\n==[ {label} ]==")
+    print("====== SUMMARY ======")
     for k, v in summary.items():
         print(f"  {k:>10s}: {v:.4f}")
     print("="*21 + "\n")

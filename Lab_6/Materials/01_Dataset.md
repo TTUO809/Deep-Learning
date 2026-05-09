@@ -57,16 +57,16 @@
 
 ## Data Loader 實作要點
 
-- [ ] 讀取 `train.json`，對應圖像路徑與 multi-label
-- [ ] 讀取 `test.json` / `new_test.json`（list 格式，無圖像路徑）
-- [ ] 將 labels 轉換為 **one-hot vector**（長度 = 24）
-- [ ] 圖像 normalization：
+- [x] 讀取 `train.json`，對應圖像路徑與 multi-label
+- [x] 讀取 `test.json` / `new_test.json`（list 格式，無圖像路徑）
+- [x] 將 labels 轉換為 **one-hot vector**（長度 = 24）
+- [x] 圖像 normalization：
 
 ```python
 transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 ```
 
-- [ ] 定義 **multi-label condition embedding** 方法（e.g., linear projection of one-hot）
+- [x] 定義 **multi-label condition embedding** 方法（e.g., linear projection of one-hot）
 
 ---
 

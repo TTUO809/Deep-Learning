@@ -11,8 +11,8 @@
 
 | Split | Sampler | Steps | Guidance Scale | Accuracy |
 |-------|---------|-------|----------------|----------|
-| test | DDIM + classifier guidance | 100 | s=2.0 | **95.83%** |
-| new_test | DDIM + classifier guidance | 100 | s=2.0 | **98.81%** |
+| test | DDIM + classifier guidance | 100 | s=1.0 | **98.61%** |
+| new_test | DDIM + classifier guidance | 100 | s=1.0 | **96.43%** |
 | test | DDPM | 1000 | — | 97.22% |
 | new_test | DDPM | 1000 | — | 92.86% |
 
@@ -66,7 +66,7 @@ python train.py --epochs 200 --batch_size 64 --amp --resume ../checkpoints/last.
 
 # Evaluate — generate images/test/ and images/new_test/, print accuracy
 python evaluate.py --ckpt ../checkpoints/last.pt \
-    --sampler ddim_guided --steps 100 --guidance_scale 2.0
+    --sampler ddim_guided --steps 100 --guidance_scale 1.0
 
 # Denoising visualisation (saves results/denoise_process.png)
 python denoise_process.py --ckpt ../checkpoints/last.pt \
